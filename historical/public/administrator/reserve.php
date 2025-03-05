@@ -1,0 +1,157 @@
+<?php
+//ini_set('display_errors', 1);
+//error_reporting(E_ALL);
+
+//<authorization type="garage_reservation" level="4"/>
+$protectPass = $dbConn->protectCheck(4);
+if (!$protectPass)
+	exitWithBottom('You are not authorized.');
+?>
+
+<dynamic content="reservation" steps="5"/>
+
+<?php
+
+require_once 'gr_orig/garage_reservation.php'; // in folder include/
+require_once '../reservation_lib.php';
+
+function get_reservation_1() {
+    require_once 'customer_selector.php';
+    with_users();
+    return get_cust();
+}
+
+function get_reservation_2($steps) {
+    $form = new form('Select a Contact');
+
+    $user_list = new single_select_group();
+    $pop = new recordset_populator($user_list, array('GR_USER', 'GR_USER_DEPARTMENT'), array('USER_NAME', 'USER_ID'), null, 'USER_NAME');
+    $pop->set_components('name', 'id');
+    $pop->set_pairs();
+    $cust = $steps->get_form_cache(1)->get_by_name('Customer')->get_value()->get_selected_item()->get_value();
+    $steps->store('dept_no', $cust);
+    $pop->set_condition("USER_ID_FK = USER_ID and DEPT_NO_FK = '$cust' and AUTH_ID_FK in (2,3,4)");
+    $pop->populate();
+
+    $view = new data('Contact', $user_list);
+    $view->set_renderer(new list_renderer('select_box'));
+    $form->add($view);
+
+    $sub = new data('Continue');
+    $sub->set_renderer(new button_renderer());
+    $form->add($sub);
+
+    return $form;
+}
+
+function get_reservation_3($steps) {
+    $user = $steps->get_form_cache(2)->get_by_name('Contact')->get_value()->get_selected_item()->get_value();
+    setuserid($user);
+    setcustid($steps->retrieve('dept_no'));
+    $steps->store('user_id', $user);
+
+    return get_reservation(true);
+}
+
+function verify_reservation_3($steps) {
+    // Test that the enter time is not after the exit time
+    $form = $steps->get_current_form();
+    $form->update();
+    $starttime = $form->get_by_name('Enter Time')->get_formatted_value();
+    $endtime = $form->get_by_name('Exit Time')->get_formatted_value();
+    if(strtotime($starttime) > strtotime($endtime)) throw new step_exception("Enter time must be before exit time.");
+
+    $uid = $steps->retrieve('user_id');
+    $frs = $steps->get_form_cache(3)->get_by_name('KFS Number')->get_value();
+    validate_frs($uid, $frs, $steps);
+}
+
+function get_reservation_4($steps) {
+    return get_guestlist(($steps->get_previous_form()->get_by_name('Guests')->get_value()->get_selected_item()->get_name() == 'Guest List'), $steps->get_current_form_cache());
+}
+
+function verify_reservation_4($steps) {
+    global $auth;
+
+	 //hmmmm, function??
+	 if (!is_object($auth))
+		 $auth = new authorization_garage_reservation(); // jody
+	 $form = $steps->get_form_cache(4);
+    if($form->get_name() == 'Add Guests') {
+        $guests = $form->get_by_name('Guests')->get_value();
+        if($_POST['submit_button'] == 'Remove Selected') {
+            if(!isset($_POST['Guests'])) throw new step_exception('Please select a name to remove from the list.');
+            $name = $_POST['Guests'];
+            $guests->remove_name($name);
+            throw new step_exception(null);
+        }
+        else if($_POST['submit_button'] == 'Add Guest') {
+            if($guests->size() == 25 && $auth->get_authorization()!=4)
+                throw new step_exception('Cannot add more than 25 guests.');
+
+            $fname = trim($form->get_by_name('First Name')->get_value());
+            $lname = trim($form->get_by_name('Last Name')->get_value());
+            $new_item = "$fname $lname";
+
+            if($fname and $lname) {
+                if($guests->get_by_name($new_item))
+                    throw new step_exception('That name already appears on the guest list.');
+                $guests->add(new data_item($new_item));
+            }
+            else throw new step_exception("Please enter the guest's first and last name.");
+            throw new step_exception(null);
+        }
+        else {
+            if($guests->size() == 0)
+                throw new step_exception('Please add some guests to the guest list.');
+            else return;
+        }
+    }
+}
+
+function get_reservation_5($steps) {
+    return get_recurring($steps->get_form_cache(3), $steps->get_current_form_cache());
+}
+
+function verify_reservation_5($steps) {
+    verify_recurring($steps->get_current_form_cache(), $steps->get_form_cache(3));
+}
+
+function submit_reservation_5($steps) {
+	$res_form = $steps->get_form_cache(3);
+	$guest_form = $steps->get_form_cache(4);
+	$recurring_form = $steps->get_form_cache(5);
+	$dept_no = $steps->retrieve('dept_no');
+	$pdfConfirmFile = '';
+	make_reservation($res_form, $guest_form, $recurring_form, $dept_no, true);
+}
+
+function get_reservation_6() {
+	// don't think this is being used at all.
+	return get_confirmation(false);
+}
+
+// I think this is
+class steps_reservation extends form_steps {
+    protected $form_name = 'Reservation';
+    protected $steps = array
+        (
+         1 => 'Department',
+         2 => 'Contact',
+         3 => 'Reservation',
+         4 => 'Guests',
+         5 => 'Recurring Dates',
+         6 => 'Done'
+         );
+    protected $descriptions = array
+        (
+         1 => 'Select a department to make this reservation.',
+         2 => 'Select a contact to make this reservation.',
+         3 => 'Fill out the specifics of your reservation.',
+         4 => 'Please list the guests who will be allowed.',
+         5 => 'List any recurring dates for this reservation.',
+         6 => 'The reservation has been made.'
+         );
+    protected $exit_page = 'index.php';
+}
+?>

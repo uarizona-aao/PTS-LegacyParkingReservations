@@ -1,0 +1,417 @@
+<?php
+$docRoot = $_SERVER['DOCUMENT_ROOT'];
+require_once $docRoot.'/parking/garage-reservation/garage-reservation-include.php';
+?>
+<div id="main">
+ <br />
+ <div class="container" >
+	<div class="row">
+	 <div class="col-sm-4 col-md-4 col-lg-4 hidden-xs">
+	 <?php
+	 include_once $docRoot.'/parking/parking-menu-include.php';
+	 ?>
+	 </div>
+	 <!-- end side nav menu -->
+	 <div id="mainContent" class="col-sm-8 col-md-8 col-lg-8"  >
+	 <ol class="breadcrumb">
+		<li><a href="/">Home</a></li>
+		<li><a href="/parking/">Parking & Permits</a></li>
+		<li class="active">Garage Reservation</li>
+	 </ol>
+	 <h1  class="page-heading">Department Visitor Garage Reservation</h1>
+	 <hr />
+	 <div id="editableContent">
+
+	<style>
+		.notActive td {background-color:#888;}
+	</style>
+<?php
+
+spinnerWaiting();
+if ($auth >= 2) // $_SESSION['cuinfo']['auth'] must be >= 2
+{
+	$customer = $_SESSION['cuinfo'];
+	$userid = $customer['userid'];
+
+	$msgs = array(
+		'nopbc'=>'Please contact us to edit Phoenix BioMedical Campus Reservations. (520) 621-3710.',
+		'edited'=>'Your changes have been saved',
+		'nochanges'=>'No edits were made',
+		'created'=>'Your reservation has been created',
+		'cancelled'=>'The reservation has been cancelled',
+		'resallowed'=>'You do not have access to view or edit this reservation',
+		'resnotfound'=>'Reservation Number Not Found',
+		'notactive'=>'This reservation is not active and cannot be edited',
+		'noselect'=>'Please check a reservation to continue.',
+		'multicancel'=>'Your selected reservations have been cancelled.',
+		'garageMax'=>'No Changes Made. The garage you selected has already reached its capacity for the selected date.<br><br>For further assistance please contact PTS Visitor Programs at (520) 621-3710.',
+	);
+
+	if (isset($_GET['msg']) && isset($msgs[$_GET['msg']])) {
+		echo '<br><br><div align="center" style="color:#003366; font-size:20px; font-weight:bold;">'
+		. '<span style="border:2px solid red; padding:2px; text-shadow: 0 1px 2px orange;">'.$msgs[$_GET['msg']]."</span></div><br>\n";
+
+	} else {
+		// echo '<div style="text-align:center;"><div style="margin:0 auto; font-size:14px; border:solid 1px #CCCCCC; background-color:#F1F1F1; margin-top:10px; padding:3px; font-weight:bold; line-height:20px; width:230px;"><span style="color:#003366;">New Reservation System!</span><br/><a href="newfeatures.php">Find Out What\'s Now Possible...</a></div>';
+	}
+
+	?>
+
+	<script language="JavaScript" type="text/javascript">
+	function checkMultiForm () {
+		var alerts = "";
+		with (document.multiForm) {
+
+		}
+
+		if (alerts) {
+			alert(alerts);
+			return false;
+		}
+	}
+
+	function openSearch () {
+		document.getElementById("searchRes").style.visibility = "visible";
+	}
+
+	function closeSearch () {
+		document.getElementById("searchRes").style.visibility = "hidden";
+	}
+	</script>
+
+	<?php
+
+	$notices = ''; // file_get_contents("notices.txt",false);
+	if (!$notices) {
+		echo ''; // '<p align="center">No notices</p>';
+	} else {
+		$notices = explode("- ",$notices);
+		if (count($notices)>1) array_shift($notices);
+		echo '<div style="text-align:left; float:right; margin:20px; border:solid 2px #CCCCCC; background-color:#F1F1F1; padding:10px; width:200px; font-size:12px;" id="notices">
+			<div style="color:#CC3333; font-weight:bold; padding:5px;"><img src="/images/icons/notices.gif" width="20" height="20" alt="" align="absmiddle"/> Notices</div></div>';
+		echo "<ul>\n";
+		foreach ($notices as $notice) {
+			echo "<li>$notice<br/>&nbsp;</li>\n";
+		}
+		echo "</ul>\n";
+	}
+?>
+<p>
+<span class="text-danger">
+<b>NEW:</b> South Stadium and Highland Avenue are now gateless garages that use a mobile app (Passport) for guest parking. Guests will have to download the app, and setup an account with their license plate and credit card information.  A zone # and validation code are required for your guest to input into the mobile app to pay for their parking. Their credit card will not be charged for the parking session.  
+ </span><br><br>
+After you make your reservation, we will process your request and send you an email receipt confirmation
+ with the zone #, code(s), and instructions for your guest. <a href="/pdf/sample-receipt.pdf" target="_blank">
+ <img src="/images/icons/pdf.gif" width="16" height="16" border="0" align="absmiddle" alt="Viewing this link requires Adobe Acrobat Viewer."/>&nbsp;Sample receipt</a>.
+<br><br>
+If you do not receive an email or have further questions about this new process, please contact Visitor Programs at <strong>(520) 621-3710</strong>.   
+<br><br>
+
+You may reserve up to 25 spaces per garage per day.
+Reservations must be made at least one day in advance.
+<br><br>
+
+To arrange for large groups, same-day reservations, or more information, call <strong>(520) 621-3710</strong>.
+
+
+ <br><br>
+
+
+
+
+
+<a href="create.php" class="btn btn-large btn-default">Make a New Reservation</a><br/>
+
+
+
+<?php
+$viewNames = array("normal"=>"Upcoming Active Reservations","cancelled"=>"Cancelled Reservations","past"=>"Past Reservations (12 Mos.)",'search'=>"Search Reservations");
+
+$order = "RES_DATE DESC";
+
+if (@$_GET['resConf']) {
+	// resConf is from create.php
+	$viewType = 'xxxxxxxxxx';
+	$viewName = '';
+
+} else if (isset($_GET['view']) && isset($viewNames[$_GET['view']])) {
+	if (ctype_alnum($_GET['view']))
+		$viewType = $_GET['view'];
+	else
+		$viewType = "normal";
+	$viewName = $viewNames[$viewType];
+} else {
+
+	$viewType = "normal";
+	$viewName = $viewNames[$viewType];
+}
+
+$qVarsA  = array();
+$viewSql = '';
+$viewAllMsg = '';
+
+if (@$_GET['searchString'] && !@$_POST['searchString']) {
+	$_POST['searchString'] = urldecode($_GET['searchString']);
+	$_POST['searchType'] = urldecode($_GET['searchType']);
+	$_POST['sh_DEPT_NO_FK'] = urldecode($_GET['sh_DEPT_NO_FK']);
+	$_POST['sh_USER_NAME'] = urldecode($_GET['sh_USER_NAME']);
+}
+
+if (@$_GET['resConf']) {
+	$viewSql = "ACTIVE=111111111111111111"; // whoregarble
+
+} else if ($viewType=="cancelled") {
+
+	$viewSql = "ACTIVE=0";
+	if (!$_GET['viewAllCanceled'])
+		$viewSql .= " AND RES_DATE > TO_DATE('".date('m/d/Y', mktime(0, 0, 0, date('m'),   date('d'),   date('Y')-1))."','MM/DD/YYYY')";
+	$viewAllMsg = '<br><div align="left"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="?view=cancelled&viewAllCanceled=1" style="font-weight:bold;">View All Canceled</a></div>';
+
+} elseif ($viewType=="past") {
+	//jody 8/22/2013 2000 records if DEPT_NO_FK IN (08905)  	$viewSql = "ACTIVE=1 AND RES_DATE < SYSDATE";
+	$date_tomorrow	= date('m/d/y', mktime(0,	0,	0,	date('m'),	date('d')+1,	date('Y')));
+	$date_year_ago = date('m/d/y', mktime(0,	0,	0,	date('m'),	date('d'),	date('Y')-1));
+	$viewSql = "ACTIVE=1 AND RES_DATE between to_date('".$date_year_ago."', 'mm/dd/yy') and to_date('".$date_tomorrow."', 'mm/dd/yy')";
+} elseif ($viewType=='search' && isset($_POST['searchString'])) {
+
+	$_POST['searchString'] = strtolower($_POST['searchString']);
+	$searchString = $_POST['searchString'];
+	// get guests
+	if ($_POST['searchType']=='GUEST_NAME') {
+
+		//$searchString = stripslashes(strtolower(str_replace("'","''",$_POST['searchString'])));
+		//$dbConn->query("SELECT RESERVATION_ID_FK FROM PARKING.GR_GUEST WHERE LOWER(GUEST_NAME) LIKE '%$searchString%'");
+		$query = "SELECT RESERVATION_ID_FK FROM PARKING.GR_GUEST WHERE LOWER(GUEST_NAME) LIKE :searchString";
+		$qVarsB = array('searchString'=>"%$searchString%");
+		$dbConn->sQuery($query, $qVarsB);
+
+		if ($dbConn->rows)
+			$viewSql = "RESERVATION_ID IN (".implode(",",array_unique($dbConn->results['RESERVATION_ID_FK'])).")";
+		else
+			$viewSql = 'RESERVATION_ID=0';
+
+		} elseif ($_POST['searchType']=='RES_DATE') {
+			// error checking
+			if (!preg_match("/[0-9]{1,2}(\/|\-)[0-9]{1,2}(\/|\-)20[0-9]{2}/",stripslashes($searchString))) {
+				$viewSql = 'RESERVATION_ID=0';
+				$errorMsg = 'Date formatted incorrectly (MM/DD/YYYY)';
+			}	else {
+				// replace dashes with slashes for a dash-slash party
+				$searchString = str_replace('-','/',$searchString);
+
+				//$searchString = $dbConn->format($searchString,true,false);
+				//$viewSql = "RES_DATE=TO_DATE($searchString,'MM/DD/YYYY')";
+				$viewSql .= "RES_DATE=TO_DATE(:sq_RES_DATE,'MM/DD/YYYY')";
+				$qVarsA['sq_RES_DATE'] = $dbConn->sFormat($searchString,true,false);
+			}
+
+		} elseif ($_POST['searchType']=='FRS_FK') {
+
+			$viewSql .= "FRS_FK=:sq_FRS_FK";
+			$qVarsA['sq_FRS_FK'] = $dbConn->sFormat(strtolower($searchString),true,true,255);
+		}
+
+		// admin searches for
+			// dept no
+		if (isset($_POST['sh_DEPT_NO_FK']) && $_POST['sh_DEPT_NO_FK']) {
+			if ($viewSql) // this should always be true, this is just some insane insanity check I did.
+				$viewSql .= ' AND ';
+			//$viewSql .= "DEPT_NO_FK=".$dbConn->format($_POST['sh_DEPT_NO_FK'],true,false,10);
+			$viewSql .= "DEPT_NO_FK=:sq_DEPT_NO_FK";
+			$qVarsA['sq_DEPT_NO_FK'] = $dbConn->sFormat($_POST['sh_DEPT_NO_FK'],true,false,10);
+		}
+			// user name
+		if (isset($_POST['sh_USER_NAME']) && $_POST['sh_USER_NAME']) {
+			if ($viewSql) // this should always be true, this is just some insane insanity check I did.
+				$viewSql .= ' AND ';
+			//$viewSql .= "LOWER(U.USER_NAME) LIKE '%".stripslashes(strtolower(str_replace("'","''",$_POST['sh_USER_NAME'])))."%'";
+			$viewSql .= "LOWER(U.USER_NAME) LIKE :sq_u_n";
+			$qVarsA['sq_u_n'] = "%" . stripslashes(strtolower($_POST['sh_USER_NAME'])) . "%";
+		}
+
+	} elseif ($viewType=='normal') {
+		$viewSql = "ACTIVE=1 AND TRUNC(RES_DATE)>=TRUNC(SYSDATE)";
+		$order = "RES_DATE ASC";
+	}
+
+
+	?>
+
+
+	<p style="margin-top: 0; margin-bottom: 0;">&nbsp;</p>
+<form action="index.php?view=search" method="post" name="schResForm" style="margin-top: 0" onSubmit="if (!this.searchString.value) return false;">
+	<div style="white-space:nowrap; text-align:left; position:absolute; width:420px; top:250px; left:50%; margin-left:-350px; visibility:hidden; background-color:#F1F1F1; border:solid 2px #333333; font-size:12px;" id="searchRes">
+
+	<div align="center" style="background-color:#CCCCCC; padding:6px; font-weight:bold;">Search &nbsp; Reservations</div>
+	<div style="padding:6px;">
+
+	<div style="float:left; width:130px; text-align:right;"><b>Search Type:</b></div>
+	<div style="margin-left:130px; line-height:14px;">
+	<input type="radio" name="searchType" checked value="GUEST_NAME" <?php if (@$_POST['searchType']=='GUEST_NAME') echo 'checked';?> /> Guest/Group Name</div>
+	<div style="margin-left:130px; line-height:14px;">
+	<input type="radio" name="searchType" value="FRS_FK" <?php if (@$_POST['searchType']=='FRS_FK') echo 'checked';?> /> KFS
+	</div>
+	<div style="margin-left:130px; line-height:14px;">
+	<input type="radio" name="searchType" value="RES_DATE" onclick="if(document.schResForm.searchString.value==''){document.schResForm.searchString.value='<?php echo date('m/d/Y');?>';}" <?php if (@$_POST['searchType']=='RES_DATE') echo 'checked';?> /> Res. Date (mm/dd/yyyy)
+	</div>
+
+
+	<div style="padding-top:3px; padding-left:3px; padding-right:5px;"><b>Search Phrase or Date:&nbsp;</b>
+	&nbsp;<input type="text" name="searchString" value="<?php echo @htmlspecialchars(stripslashes($_POST['searchString']));?>"/></div>
+
+	<br />
+	<div style="margin-left:1px; margin-left:75px; line-height:14px;">&nbsp;&nbsp;&nbsp; Dept. No. (optional):&nbsp;
+	<input type="text" name="sh_DEPT_NO_FK" size="10" style="font-size:11px;"  value="<?php echo @htmlspecialchars(stripslashes($_POST['sh_DEPT_NO_FK']));?>"/></div>
+	<div style="margin-left:1px; margin-left:75px; line-height:14px;">User Name (optional):&nbsp;&nbsp;
+	<input type="text" name="sh_USER_NAME" size="10" style="font-size:11px;" value="<?php echo @htmlspecialchars(stripslashes($_POST['sh_USER_NAME']));?>"/></div>
+
+	</div>
+	<div style="padding:6px; text-align:center;">
+	<br />
+	<input type="submit" name="submit" value="Search &gt;&gt;" class="submitter"/>
+	<div align="right" class="note"><a href="javascript:void(0);" onClick="closeSearch();">&lt; Close &gt;</a></div>
+	</div>
+	</div>
+	</form>
+
+	<?php
+
+
+	echo '<p align="left">&nbsp;&nbsp;<span style="background-color:#CCCCCC; padding:6px;"><img src="/images/customer-view.gif" width="68" height="22" alt="Views" align="absmiddle"/></span><span style="background-color:#EEEEEE; padding:6px;"> &nbsp; ';
+	$ii = 0;
+	foreach ($viewNames as $v=>$vn) {
+	  echo '&nbsp;&nbsp;';
+		if ($v==$viewType)
+			echo '<b>[ ';
+		if ($v=='search')
+			echo '<a href="javascript:void(0);" onClick="openSearch();">'."$vn</a>";
+		else
+			echo "<a href=\"?view=$v\">$vn</a>";
+		if ($v==$viewType)
+			echo ' ]</b>';
+		echo ' &nbsp; ';
+		if ($ii==1)
+			echo '</span><p align="left">&nbsp;&nbsp;<span style="background-color:#CCCCCC; padding:5px; border:solid 1px #ffffff;"><img src="/images/customer-view.gif" width="68" height="22" alt="Views" align="absmiddle"/></span><span style="background-color:#EEEEEE; padding:5px; border:solid 1px #ffffff;"> &nbsp;&nbsp;';
+		$ii++;
+	}
+	echo "</span></p>\n";
+
+	// get current reservations for user and department
+	$query = "SELECT RESERVATION_ID, TO_CHAR(RES_DATE,'MM/DD/YYYY') AS RESDATE, TO_CHAR(ENTER_TIME,'HH:MI AM') AS ENTERTIME,
+					TO_CHAR(EXIT_TIME,'HH:MI AM') AS EXITTIME, ACTIVE, USER_ID_FK, GARAGE_NAME,
+					(SELECT SUM(GROUP_SIZE) FROM PARKING.GR_GUEST V WHERE V.RESERVATION_ID_FK=R.RESERVATION_ID) AS SPACES,
+					PRICE, USER_NAME, FRS_FK
+				 FROM PARKING.GR_RESERVATION R INNER JOIN PARKING.GR_USER U ON R.USER_ID_FK=U.USER_ID
+				 INNER JOIN PARKING.GR_GARAGE G ON R.GARAGE_ID_FK=G.GARAGE_ID
+				 WHERE
+				 ";
+	$validSql = false;
+	if (@$_POST['searchString'] && $_SESSION['cuinfo']['auth']>2) {
+		$query .= '1=1 ';
+		$validSql = true;
+	} else {
+		$query .= "DEPT_NO_FK IN (";
+		$tmpQvar = '';
+		foreach ($customer['deptno'] as $key=>$val) {
+			$validSql = true;
+			if ($tmpQvar) $query .= ",";
+			$tmpQvar = "qv_$key";
+			$query .= ":$tmpQvar";
+			$qVarsA[$tmpQvar] = $val;
+		}
+		$query .= ") ";
+	}
+	if ($viewSql)  $query .= "AND $viewSql ";
+	$query .= "ORDER BY $order";
+	if ($validSql)
+		$dbConn->sQuery($query, $qVarsA);
+
+
+	if ($dbConn->rows)
+	{
+		//echo '<p align="center"><b>'.(($dbConn->rows>100) ? '<span style="color:#CC0000;">* Limited to 100 Results</span>' : "$dbConn->rows Result(s)")."</b></p>\n";
+		echo '<br /><h4>'.$viewNames[$viewType].'</h4>';
+
+		echo '<table class="table-striped" id="resTable" style="cursor:default; white-space:nowrap;">';
+		echo '<tr><th style="background:#CCCCCC; font-weight: bold;">Number</th> <th style="background:#CCCCCC; font-weight: bold;">Date</th> <th style="background:#CCCCCC; font-weight: bold;">Enter</th> <th style="background:#CCCCCC; font-weight: bold;">Exit</th> <th style="background:#CCCCCC; font-weight: bold;">Garage</th> <th style="background:#CCCCCC; font-weight: bold;">Spaces</th>';
+		//echo '<th>Price</th>';
+		//echo '<th>Total</th>';
+		echo ' <th style="background:#CCCCCC; font-weight: bold;">Reserved By</th> <th style="background:#CCCCCC; font-weight: bold;">Account</th></tr>';
+		$now = date("m/d/Y");
+		$limiter = $dbConn->rows; // used to be if ($dbConn->rows>100) $limiter = 100; else...
+		for ($i=0; $i<$limiter; $i++)
+		{
+			if ($dbConn->results['ACTIVE'][$i])
+				$rowClass = "row1"; // white
+			else
+				$rowClass = "notActive"; // grey
+			echo '	<tr valign="top" onclick="gores('.$dbConn->results['RESERVATION_ID'][$i].');" class="'.$rowClass.'" onmouseover="this.className=\'row2\';" onmouseout="this.className=\''.$rowClass.'\';"><td>' . $dbConn->results['RESERVATION_ID'][$i] . '</td>';
+			// if ($viewType<>"cancelled" && $viewType<>"past") {  if (($dbConn->results['USER_ID_FK'][$i]==$userid && $dbConn->results['RESDATE'][$i]!=$now && $viewType=="normal")
+			// || $_SESSION['cuinfo']['auth']>=3) echo '<a href="edit.php?id='.$dbConn->results['RESERVATION_ID'][$i].'">Edit</a> / '; }
+			echo '<td>';
+			echo $dbConn->results['RESDATE'][$i];
+			echo '</td><td>' . $dbConn->results['ENTERTIME'][$i] . '</td><td>' . $dbConn->results['EXITTIME'][$i] . '</td><td>' . $dbConn->results['GARAGE_NAME'][$i];
+			echo '</td><td align="center">' . $dbConn->results['SPACES'][$i] . '</td>';
+			//echo '<td align="center">$' . $dbConn->results['PRICE'][$i] . '</td>';
+			//echo '<td align="center">$' . ($dbConn->results['SPACES'][$i]*$dbConn->results['PRICE'][$i]) . '</td>';
+			echo '<td>' . $dbConn->results['USER_NAME'][$i] . '</td><td>' . $dbConn->results['FRS_FK'][$i] . "</td></tr>\n";
+		}
+		echo "	</table>\n";
+		echo $viewAllMsg;
+		echo '<div style="text-align:right">';
+		echo '<form name="multiForm" method="post" action="index.php" onSubmit="return checkMultiForm();">';
+		echo '<p><input type="button" class="btn btn-large btn-default" value="Make a New Reservation" onClick="window.location.href=\'/parking/garage-reservation/create.php\';"/></p>';
+		//if (date("Y/m/d",strtotime($res->resdate)) > date("Y/m/d",strtotime("now")))
+		echo'<p>';
+		// jsc - 20070516 - Removed cancel selected reservations, until can figure out how to prevent for past reservations
+		// echo '<!-- <input type="submit" name="killSelected" value="Cancel Selected Reservations" style="color:#CC0000; font-weight:bold;" onClick="this.form.action=\'cancel.php\'; "/> --></p>';
+		echo '</form>  </div>'."\n";
+
+		?>
+		<script type="text/javascript">
+		function gores(id)
+		{
+			document.location.href='/parking/garage-reservation/view.php?id=' + id + '&searchType=<?php echo @urlencode($_POST['searchType']);?>&searchString=<?php echo @urlencode($_POST['searchString']);?>&sh_DEPT_NO_FK=<?php echo @urlencode($_POST['sh_DEPT_NO_FK']);?>&sh_USER_NAME=<?php echo @urlencode($_POST['sh_USER_NAME']);?>&view=<?php echo @$_GET['view'];?>';
+		}
+		</script>
+		<?php
+
+	} else if (@!$_GET['resConf']) {
+		echo '<p align="center" class="warning">No Results</p>';
+	}
+}
+
+?>
+
+
+	 <br /> <br /> <br /> <br /> <br />
+
+	 </div>
+  </div>
+</div>
+
+</div>
+</div>
+<?php
+include_once $docRoot.'/Templates/bottom_footer.php';
+?>
+<style>
+		.rowActive {background-color:#ffffee;cursor:pointer;}
+
+	.rowSelected {background-color:#AB0520;}
+
+	#resTable,#resTable td {cursor:pointer;}
+</style>
+
+<script>
+
+$("#resTable").on("mouseenter","tr",function() {
+			  $(this).find('td').addClass( "rowActive" );
+
+		  }).on("mouseleave","tr",function() {
+			  $(this).find('td').removeClass( "rowActive" );
+		  }).on("click","tr",function() {
+			 $(this).find('td').addClass("rowSelected");
+		  });
+
+</script>
