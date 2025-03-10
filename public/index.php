@@ -12,6 +12,9 @@ use Slim\Factory\ServerRequestCreatorFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+// Include the annoying global functions we need in this app.
+include_once __DIR__ . '/../src/common_functions.php';
+
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
 

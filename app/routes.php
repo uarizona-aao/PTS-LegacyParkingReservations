@@ -17,10 +17,13 @@ return function (App $app) {
     });
 
     $app->get('/', function (Request $request, Response $response) {
+        print "<pre>";
+        var_dump($_SESSION);
+        exit;
         $response->getBody()->write('Hello world!');
         return $response;
     });
-
+    
     $app->get('/test_twig', function(Request $request, Response $response) {
         $view = Twig::fromRequest($request);
 
