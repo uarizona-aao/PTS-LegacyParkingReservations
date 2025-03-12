@@ -1,0 +1,32 @@
+body {text-align:left; font-size:11px; margin:0; padding:0;}
+
+#bodydiv {padding-left:1px; padding-right:1px;}
+#content {width:100%; margin:0; border:0;}
+
+h1 {color:#003366; font-weight:normal; font-size:18px; border-bottom:solid 1px #003366;}
+h2 {font-size:18px; color:#003366; text-decoration:underline; font-weight:normal;}
+
+/************ stuff to hide **********************/
+/** ,#ua_header_bottom,#ua_banner,#uaheader,#ptslogo,#footer,#ptsheader **/
+#menu,#dropnav,#ptsright,#surveyOffer,#printBlocker,#breadcrumb {display:none;}
+#print_hide_1,#print_hide_2,#print_hide_3 {display:none;}
+
+#container,#rightnav {background:none;}
+
+.logout,.navmagic {display:none;}
+
+#Layer1 {display: none;}
+#Layer2 {display: none;}
+#Layer3 {display: none;}
+#Layer4 {display: none;}
+#Layer5 {display: none;}
+
+
+/************ stuff to show **********************/
+/****
+#printShowLogo {
+	display:block;
+	background-image: url("/img/logos/pts.gif");
+	background-repeat:no-repeat;
+}
+****/

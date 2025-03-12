@@ -1,0 +1,14 @@
+<div id="utility_links" style="margin-bottom:15px;margin-right: 30px;" >
+    <ul>
+        {% if user is not empty %}
+        <li>Logged in as  <span style="font-weight:500;color:#AB0520;">{{user.givenname_fn}} {{user.sn}}</span>
+            {# &nbsp;&nbsp;&nbsp;-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a onclick="document.location.href='/index.php?logout=1'"  title="Click here to log out"  style="cursor:pointer;" />Logout</a> #}
+        </li>
+        {% endif %}
+        <?php
+            }
+            ?>
+
+        <li><a href="https://arizona.aimsparking.com/">My Account</a></li>
+    </ul>
+</div>

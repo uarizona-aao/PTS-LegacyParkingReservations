@@ -17,9 +17,6 @@ return function (App $app) {
     });
 
     $app->get('/', function (Request $request, Response $response) {
-        print "<pre>";
-        var_dump($_SESSION);
-        exit;
         $response->getBody()->write('Hello world!');
         return $response;
     });
@@ -29,6 +26,17 @@ return function (App $app) {
 
         return $view->render($response, 'example.html.twig', [
             'name' => 'Chocollato'
+        ]);
+    });
+
+    $app->get('/test_user_header', function(Request $request, Response $response) {
+        $view = Twig::fromRequest($request);
+
+        $view->getEnvironment()->addGlobal('user', $_SESSION['eds_data'] ?? null);
+
+        return $view->render($response, 'customer_home.html.twig', [
+            'name' => 'test_user_header',
+            'user' => $_SESSION['eds_data'] ?? null
         ]);
     });
 

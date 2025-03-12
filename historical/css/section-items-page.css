@@ -1,0 +1,35 @@
+	.subnav {padding-left:25px;}
+	.subnav li {}
+	.subnav li a {font-size:13px;padding-top:5px;height:25px;}
+	#mainContent {}
+	#sidelinks {top:75px;}
+		#sidelinks
+	{
+		
+		
+		width: 228px;
+margin: 30px 0 0;
+margin-top:0 !important;
+padding: 0;
+background-color: #fff;
+-webkit-border-radius: 6px;
+-moz-border-radius: 6px;
+border-radius: 6px;
+-webkit-box-shadow: 0 1px 4px rgba(0,0,0,.061);
+-moz-box-shadow: 0 1px 4px rgba(0,0,0,.061);
+box-shadow: 0 1px 4px rgba(0,0,0,.061);z-index:900;
+	}
+	#myScrollspy {z-index:900 !IMPORTANT;}
+	
+	dd {
+	background:url('../images/icon-answer.png') no-repeat left top;
+	padding-left: 40px;margin-bottom:17px;
+}
+dt {color:#555555;margin-top:7px;}
+.panel-title {border-bottom:1px solid #AB0520;color:#0C234B;margin-top:31px;text-transform: uppercase;}
+h2 {background-color:#FFFFEE;text-transform: uppercase;}
+
+
+.card		{margin:15px;}
+
+.redbar {z-index:1000 !IMPORTANT;}

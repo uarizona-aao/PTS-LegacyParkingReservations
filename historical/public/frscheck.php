@@ -82,7 +82,8 @@ if (isset($_GET['frs']) && isset($_GET['cust']))
 			   <?php if ($goodKFS) { ?>
 					ERROR: INVALID customer ID.
 				<?php }else{ ?>
-					ERROR: Invalid KFS number (no longer using FRS numbers).
+					ERROR: KFS# was not recognized, check to see if it was entered correctly.
+Contact (520) 621-3300 so that we may add KFS# to the system.
 				<?php } ?>
 				<?php if ($GLOBALS['DEBUG_DEBUG']) { ?>
 					<div style='position:absolute; top:22; right:22; width:100%; height:100%; padding:1px 5px 5px 5px; margin:1px; background-color:orangered; color:white; font-weight:normal;'>Debug Data query: <?php echo $query . ' [[ ' . print_r($qVars,true). ' ]] ';?></div>

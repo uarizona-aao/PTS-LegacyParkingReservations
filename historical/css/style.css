@@ -1,0 +1,43 @@
+
+input[type=submit], input[type=button] {
+	background-color:#207CD8;
+	color:#fff;
+	border-right:2px solid #036;
+	border-bottom:2px solid #036;
+	border-top:2px solid #84bbf3;
+	border-left:2px solid #84bbf3;
+	font-family:Arial;
+	font-size:16px;
+	font-weight:bold;
+	text-decoration:none;
+	text-align:center;
+	cursor:pointer;
+}
+input[type=submit]:hover, input[type=button]:hover {
+	background-color:#378de5;
+}
+input[type=submit]:active, input[type=button]:active {
+	background-color:#4395EA;
+}
+
+.buttonBluSm {
+	/** #4395EA Use like this class="buttonBlu buttonBluSm" **/
+	font-size:14px;
+}
+
+
+.submitterBtnRed {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #e08d8d), color-stop(1, #bd2429) );
+	background:-moz-linear-gradient( center top, #e08d8d 5%, #bd2429 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#e08d8d', endColorstr='#bd2429');
+	background-color:#e08d8d;
+	color:#171717;
+	text-decoration:none;
+	text-shadow:1px 1px 2px #faa3b7;
+}.submitterBtnRed:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #bd2429), color-stop(1, #e08d8d) );
+	background:-moz-linear-gradient( center top, #bd2429 5%, #e08d8d 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#bd2429', endColorstr='#e08d8d');
+	background-color:#bd2429;
+}
+

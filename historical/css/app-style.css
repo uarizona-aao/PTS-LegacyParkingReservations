@@ -1,0 +1,11 @@
+.app-label {display:inline-block;text-align:right;margin-top:.1em;margin-right:0;padding-right:8px;font-weight:normal;}
+.app-label-above {font-weight:normal}
+.app-label-inline {font-weight:600}
+.app-control {margin:0;padding:0;padding-left:2px;}
+.appointment-display-label {display:inline-block;text-align:right;padding-right:8px;font-size:19px}
+.appointment-display-data {display:inline-block;font-size:19px;font-weight:700;text-align:left;font-weight:700;margin:0;padding:0;padding-left:2px;}
+#appointmentDisplayTab {padding-top:10px;}
+.control-invalid {border-color:#FF0000;}
+.hideMe	{visibility:hidden;}
+.edit-options-box {text-align:center;}
+.ride-edit-button {}
