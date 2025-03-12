@@ -1,0 +1,18 @@
+{% set messages = {
+    'nopbc': 'Please contact us to edit Phoenix BioMedical Campus Reservations. (520) 621-3710.',
+    'edited': 'Your changes have been saved',
+    'nochanges': 'No edits were made',
+    'created': 'Your reservation has been created',
+    'cancelled': 'The reservation has been cancelled',
+    'resallowed': 'You do not have access to view or edit this reservation',
+    'resnotfound': 'Reservation Number Not Found',
+    'notactive': 'This reservation is not active and cannot be edited',
+    'noselect': 'Please check a reservation to continue.',
+    'multicancel': 'Your selected reservations have been cancelled.',
+    'garageMax': 'No Changes Made. The garage you selected has already reached its capacity for the selected date.<br><br>For further assistance please contact PTS Visitor Programs at (520) 621-3710.'
+ } %}
+
+{# Quick message handler block. #}
+{% if get.msg is defined and get.msg in messages|keys %}
+    {{ messages[get.msg] }}
+{% endif %}

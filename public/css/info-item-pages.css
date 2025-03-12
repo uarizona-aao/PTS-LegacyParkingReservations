@@ -1,0 +1,82 @@
+.subnav {
+    padding-left: 25px;
+}
+
+.subnav li {
+}
+
+.subnav li a {
+    font-size: 13px;
+    padding-top: 5px;
+    height: 25px;
+}
+
+#mainContent {
+}
+
+#sidelinks {
+    top: 50px;
+}
+
+#sidelinks {
+    width: 228px;
+    margin: 30px 0 0;
+    padding: 0;
+    background-color: #fff;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, .061);
+    -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, .061);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, .061);
+}
+
+#mainContent {
+    background-color: #FFFFFF;
+}
+
+h4 {
+    border-bottom: 1px solid #AB0520;
+    color: #0C234B;
+    margin-top: 31px;
+    text-transform: uppercase;
+}
+
+h2 {
+}
+
+h5 {
+    font-weight: bold;
+}
+
+
+.hide-me {
+    display: none !IMPORTANT;
+}
+
+.button {
+  background-color: #ab0520;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+
+#sidelinks {
+    width: 100%;
+}
+table {
+    width: 100%;
+    border-collapse: collapse; /* Ensures borders don't have spacing between them */
+}
+
+th, td {
+    border: 1px solid black; /* Adds border to all cells */
+    padding: 8px; /* Adds some padding for better readability */
+    text-align: left; /* Aligns text to the left */
+}
+
+

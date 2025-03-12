@@ -16,9 +16,18 @@ return function (App $app) {
         return $response;
     });
 
+    // Main landing page for users
     $app->get('/', function (Request $request, Response $response) {
-        $response->getBody()->write('Hello world!');
-        return $response;
+        // Relevant fetches of data
+
+        // Configure the environment.
+        $view = Twig::fromRequest($request);
+        $view->getEnvironment()->addGlobal('user', $_SESSION['eds_data'] ?? null);
+        $view->getEnvironment()->addGlobal('get', $_GET);
+
+        return $view->render($response, 'customer_home.html.twig', [
+            'user' => $_SESSION['eds_data'] ?? null
+        ]);
     });
     
     $app->get('/test_twig', function(Request $request, Response $response) {
@@ -26,17 +35,6 @@ return function (App $app) {
 
         return $view->render($response, 'example.html.twig', [
             'name' => 'Chocollato'
-        ]);
-    });
-
-    $app->get('/test_user_header', function(Request $request, Response $response) {
-        $view = Twig::fromRequest($request);
-
-        $view->getEnvironment()->addGlobal('user', $_SESSION['eds_data'] ?? null);
-
-        return $view->render($response, 'customer_home.html.twig', [
-            'name' => 'test_user_header',
-            'user' => $_SESSION['eds_data'] ?? null
         ]);
     });
 

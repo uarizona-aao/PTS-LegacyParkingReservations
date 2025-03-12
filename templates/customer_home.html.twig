@@ -1,6 +1,158 @@
 {% extends 'components/base_layout.html.twig' %}
 
-
 {% block content %}
-This will be content soon
+    {% include 'components/msg_get_display.html.twig' %}
+    <script language="JavaScript" type="text/javascript">
+        function checkMultiForm () {
+            var alerts = "";
+            with (document.multiForm) {
+
+            }
+
+            if (alerts) {
+                alert(alerts);
+                return false;
+            }
+        }
+
+        function openSearch () {
+            document.getElementById("searchRes").style.visibility = "visible";
+        }
+
+        function closeSearch () {
+            document.getElementById("searchRes").style.visibility = "hidden";
+        }
+    </script>
+    <span style="font-weight:bold;">Validations Available Starting :</span> August 26th 2024
+    <br />
+
+    <h2>Important Update:</h2>
+    <p>
+    Validations will now be non-expiring and will no longer expire by the end of the fiscal year in which they are purchased. 
+    </p>
+    <br />
+    <p>
+    <b>Gated Garages:</b>
+    We&#39;re introducing a new system! Department accounts will be set up, allowing you to order validations for gated garages independently. To place your initial order, please follow the steps below:
+    </p>
+    <!--<img src="/parking/garage-reservation/ValidationTable.png"></img>-->
+    <h2>Validation Types and Prices for Gated Garages</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Validation Type</th>
+                <th>Quantitiy Per Order</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>$2 Validation </td>
+                <td>1-50</td>
+            </tr>
+            <tr>
+                <td>$8 Validation</td>
+                <td>1-50</td>
+            </tr>
+            <tr>
+                <td>$16 Validation</td>
+                <td>1-50</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Garage Rates:</td>
+                <td>Cherry Ave., Sixth St., Tyndall Ave., Main Gate, and Park Ave. Garages</td>
+            </tr>
+            <tr>
+                <td>Daily Hourly Rate 5am-5pm</td>
+                <td>$2/hr.</td>
+            </tr>
+            <tr>
+                <td>Daily Max Rate 5am-5pm</td>
+                <td>$8</td>
+            </tr>
+            <tr>
+                <td>Evening Hourly Rate 5pm</td>
+                <td>$1/hr.</td>
+            </tr>
+            <tr>
+                <td>Max Rate</td>
+                <td>$16</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Garage Rate</td>
+                <td>Second St. Garage</td>
+            </tr>
+            <tr>
+                <td>Hourly rate</td>
+                <td>$2/hr.</td>
+            </tr>
+            <tr>
+                <td>Max Rate </td>
+                <td>$16</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Instructions for Initial Orders (Gated Garages):</h2>
+    <ol>
+        <li>Complete and submit the  at <a href="https://app.smartsheet.com/b/form/dcbfafd0d70245a8b347aadff6bd9b4d">Dept Validation Purchase Form.</a> </li>
+        <li><b>Wait for email notification:</b> We&#39;ll notify you via email when your validation order is ready for pickup from our office.</li>
+        <li><b>Account setup:</b> We will create a Parking Account for your UA Department and send you an email with the login and password details. Once your account is set up, you can purchase future validations online. We&#39;ll email you again when your order is ready for pickup.</li>
+    </ol>
+    <p>
+    <b>Note:</b>Validations do not guarantee a parking space in the garage. Parking is available on a first-come, first-served basis.
+    </p>
+
+    <b>Gateless Garages:</b>
+    <p>
+    For Health Sciences, Highland Ave., and South Stadium Garages, continue ordering your kiosk validations as usual. Click the link below to place your order:
+    </p>
+    <p><a href="/flowbird/">Order Kiosk Validations</a></p>
+    <!--<span class="text-danger">
+    <b>NEW:</b> South Stadium and Highland Avenue are now gateless garages that use a mobile app (Passport) for guest parking. Guests will have to download the app, and setup an account with their license plate and credit card information.  A zone # and validation code are required for your guest to input into the mobile app to pay for their parking. Their credit card will not be charged for the parking session.  
+    </span><br><br>
+    After you make your reservation, we will process your request and send you an email receipt confirmation
+    with the zone #, code(s), and instructions for your guest. <a href="/pdf/sample-receipt.pdf" target="_blank">
+    <img src="/images/icons/pdf.gif" width="16" height="16" border="0" align="absmiddle" alt="Viewing this link requires Adobe Acrobat Viewer."/>&nbsp;Sample receipt</a>.
+    <br><br>
+    If you do not receive an email or have further questions about this new process, please contact Visitor Programs at <strong>(520) 621-3710</strong>.   
+    <br><br>
+
+    You may reserve up to 25 spaces per garage per day.
+    Reservations must be made at least one day in advance.
+    <br><br>
+
+    To arrange for large groups, same-day reservations, or more information, call <strong>(520) 621-3710</strong>.
+
+
+    <br><br>-->
+
+
+    <a href="create.php" class="btn btn-large btn-default">Make a New Reservation</a><br/>
+    {# Start section implementing routing for the views on the homepage TODO #}
+
+    {# End implementation. #}
+    <style>
+		.rowActive {background-color:#ffffee;cursor:pointer;}
+        .rowSelected {background-color:#AB0520;}
+        #resTable,#resTable td {cursor:pointer;}
+    </style>
+
+    <script>
+    $("#resTable").on("mouseenter","tr",function() {
+                $(this).find('td').addClass( "rowActive" );
+            }).on("mouseleave","tr",function() {
+                $(this).find('td').removeClass( "rowActive" );
+            }).on("click","tr",function() {
+                $(this).find('td').addClass("rowSelected");
+            });
+    </script>
+
 {% endblock %}
