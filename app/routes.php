@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Application\Actions\User\ListUsersAction;
-use App\Application\Actions\User\ViewUserAction;
+use App\Application\Actions\Customer\GetCustomerViewAction;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
@@ -19,6 +18,7 @@ return function (App $app) {
     // Main landing page for users
     $app->get('/', function (Request $request, Response $response) {
         // Relevant fetches of data
+        // Testing instead if we can invoke $this->dependencies customer responder
 
         // Configure the environment.
         $view = Twig::fromRequest($request);
@@ -26,17 +26,11 @@ return function (App $app) {
         $view->getEnvironment()->addGlobal('get', $_GET);
 
         return $view->render($response, 'customer_home.html.twig', [
-            'user' => $_SESSION['eds_data'] ?? null
+            'user' => $_SESSION['eds_data'] ?? null,
         ]);
     });
     
-    $app->get('/test_twig', function(Request $request, Response $response) {
-        $view = Twig::fromRequest($request);
-
-        return $view->render($response, 'example.html.twig', [
-            'name' => 'Chocollato'
-        ]);
-    });
+    $app->get('/test_customer_view', GetCustomerViewAction::class);
 
     // $app->group('/users', function (Group $group) {
     //     $group->get('', ListUsersAction::class);

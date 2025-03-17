@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use App\Application\Settings\SettingsInterface;
+use App\Application\Responders\CustomerResponder;
+use Slim\Views\Twig;
+use Twig\Loader\FilesystemLoader;
 use DI\ContainerBuilder;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
@@ -26,5 +29,12 @@ return function (ContainerBuilder $containerBuilder) {
 
             return $logger;
         },
+        Twig::class => function () {
+            $loader = new FilesystemLoader(__DIR__ . '/../templates');
+            return new Twig($loader);
+        },
+        CustomerResponder::class => function (ContainerInterface $c) {
+            return new CustomerResponder($c->get(Twig::class));
+        },  
     ]);
 };

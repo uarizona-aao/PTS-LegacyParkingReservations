@@ -1,5 +1,12 @@
 {% extends 'components/base_layout.html.twig' %}
 
+{% set views = {
+    "normal": "Upcoming Active Reservations",
+    "cancelled": "Cancelled Reservations",
+    "past": "Past Reservations (12 Mos.)",
+    'search': "Search Reservations"
+} %}
+
 {% block content %}
     {% include 'components/msg_get_display.html.twig' %}
     <script language="JavaScript" type="text/javascript">
@@ -136,9 +143,113 @@
 
 
     <a href="create.php" class="btn btn-large btn-default">Make a New Reservation</a><br/>
-    {# Start section implementing routing for the views on the homepage TODO #}
 
-    {# End implementation. #}
+	<p style="margin-top: 0; margin-bottom: 0;">&nbsp;</p>
+{# <form action="index.php?view=search" method="post" name="schResForm" style="margin-top: 0" onSubmit="if (!this.searchString.value) return false;">
+	<div style="white-space:nowrap; text-align:left; position:absolute; width:420px; top:250px; left:50%; margin-left:-350px; visibility:hidden; background-color:#F1F1F1; border:solid 2px #333333; font-size:12px;" id="searchRes">
+
+	<div align="center" style="background-color:#CCCCCC; padding:6px; font-weight:bold;">Search &nbsp; Reservations</div>
+	<div style="padding:6px;">
+
+	<div style="float:left; width:130px; text-align:right;"><b>Search Type:</b></div>
+	<div style="margin-left:130px; line-height:14px;">
+	    <input type="radio" name="searchType" value="GUEST_NAME" {% if post.searchType == 'GUEST_NAME' %}checked{% endif %} /> Guest/Group Name
+	<div style="margin-left:130px; line-height:14px;">
+	<input type="radio" name="searchType" value="FRS_FK" {% if post.searchType == 'FRS_FK' %}checked{% endif %} /> KFS
+	</div>
+	{# <div style="margin-left:130px; line-height:14px;">
+	<input type="radio" name="searchType" value="RES_DATE" onclick="if(document.schResForm.searchString.value==''){document.schResForm.searchString.value='<?php echo date('m/d/Y');?>';}" <?php if (@$_POST['searchType']=='RES_DATE') echo 'checked';?> /> Res. Date (mm/dd/yyyy)
+	</div>
+
+
+	<div style="padding-top:3px; padding-left:3px; padding-right:5px;"><b>Search Phrase or Date:&nbsp;</b>
+	&nbsp;<input type="text" name="searchString" value="<?php echo @htmlspecialchars(stripslashes($_POST['searchString']));?>"/></div>
+
+	<br />
+	<div style="margin-left:1px; margin-left:75px; line-height:14px;">&nbsp;&nbsp;&nbsp; Dept. No. (optional):&nbsp;
+	<input type="text" name="sh_DEPT_NO_FK" size="10" style="font-size:11px;"  value="<?php echo @htmlspecialchars(stripslashes($_POST['sh_DEPT_NO_FK']));?>"/></div>
+	<div style="margin-left:1px; margin-left:75px; line-height:14px;">User Name (optional):&nbsp;&nbsp;
+	<input type="text" name="sh_USER_NAME" size="10" style="font-size:11px;" value="<?php echo @htmlspecialchars(stripslashes($_POST['sh_USER_NAME']));?>"/></div> #}
+
+	</div>
+	<div style="padding:6px; text-align:center;">
+	<br />
+	<input type="submit" name="submit" value="Search &gt;&gt;" class="submitter"/>
+	<div align="right" class="note"><a href="javascript:void(0);" onClick="closeSearch();">&lt; Close &gt;</a></div>
+	</div>
+	</div>
+	</form>
+
+    <p align="center">&nbsp;&nbsp;<span style="background-color:#CCCCCC; padding:6px;"><img src="/images/customer-view.gif" width="68" height="22" alt="Views" align="absmiddle"/></span><span style="background-color:#EEEEEE; padding:6px;"> &nbsp;
+{% set ii = 0 %}
+{% for v, vn in views %}
+    &nbsp;&nbsp;
+    {% if v == viewType %}
+        <b>[ 
+    {% endif %}
+    {% if v == 'search' %}
+        <a href="javascript:void(0);" onClick="openSearch();">{{ vn }}</a>
+    {% else %}
+        <a href="?view={{ v }}">{{ vn }}</a>
+    {% endif %}
+    {% if v == viewType %}
+        ]</b>
+    {% endif %}
+    &nbsp;
+    {% if ii == 1 %}
+        </span><p align="center">&nbsp;&nbsp;<span style="background-color:#CCCCCC; padding:5px; border:solid 1px #ffffff;"><img src="/images/customer-view.gif" width="68" height="22" alt="Views" align="absmiddle"/></span><span style="background-color:#EEEEEE; padding:5px; border:solid 1px #ffffff;"> &nbsp;&nbsp;
+    {% endif %}
+    {% set ii = ii + 1 %}
+{% endfor %}
+</span></p>
+	{% if reservations|length > 0 %}
+    <br /><h4>{{ viewNames[viewType] }}</h4>
+    <table class="table-striped" id="resTable" style="cursor:default; white-space:nowrap;">
+        <tr>
+            <th style="background:#CCCCCC; font-weight: bold;">Number</th>
+            <th style="background:#CCCCCC; font-weight: bold;">Date</th>
+            <th style="background:#CCCCCC; font-weight: bold;">Enter</th>
+            <th style="background:#CCCCCC; font-weight: bold;">Exit</th>
+            <th style="background:#CCCCCC; font-weight: bold;">Garage</th>
+            <th style="background:#CCCCCC; font-weight: bold;">Spaces</th>
+            <th style="background:#CCCCCC; font-weight: bold;">Reserved By</th>
+            <th style="background:#CCCCCC; font-weight: bold;">Account</th>
+        </tr>
+        {% for transaction in reservations %}
+            {% set rowClass = transaction.ACTIVE ? 'row1' : 'notActive' %}
+            <tr valign="top" onclick="gores({{ transaction.RESERVATION_ID }});" class="{{ rowClass }}" onmouseover="this.className='row2';" onmouseout="this.className='{{ rowClass }}';">
+                <td>{{ transaction.RESERVATION_ID }}</td>
+                <td>{{ transaction.RESDATE }}</td>
+                <td>{{ transaction.ENTERTIME }}</td>
+                <td>{{ transaction.EXITTIME }}</td>
+                <td>{{ transaction.GARAGE_NAME }}</td>
+                <td align="center">{{ transaction.SPACES }}</td>
+                <td>{{ transaction.USER_NAME }}</td>
+                <td>{{ transaction.FRS_FK }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    {{ viewAllMsg }}
+    <div style="text-align:right">
+        <form name="multiForm" method="post" action="index.php" onsubmit="return checkMultiForm();">
+            <p>
+                <input type="button" class="btn btn-large btn-default" value="Make a New Reservation" onclick="window.location.href='/parking/garage-reservation/create.php';"/>
+            </p>
+        </form>
+    </div>
+
+    <script type="text/javascript">
+        function gores(id) {
+            document.location.href='/parking/garage-reservation/view.php?id=' + id +
+            '&searchType={{ post.searchType|url_encode }}&searchString={{ post.searchString|url_encode }}' + 
+            '&sh_DEPT_NO_FK={{ post.sh_DEPT_NO_FK|url_encode }}&sh_USER_NAME={{ post.sh_USER_NAME|url_encode }}' + 
+            '&view={{ get.view }}';
+        }
+    </script>
+{% else %}
+    <p align="center" class="warning">No Results</p>
+{% endif %}
+
     <style>
 		.rowActive {background-color:#ffffee;cursor:pointer;}
         .rowSelected {background-color:#AB0520;}

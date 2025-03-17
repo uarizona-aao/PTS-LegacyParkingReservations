@@ -403,7 +403,7 @@ class database
 		// 	$OUT_FILE = fopen(dirname(__FILE__).'/database.csv.txt', 'a');
 		// 	//fwrite($OUT_FILE, $outTxt);
 		// 	//fclose($OUT_FILE);
-		// 	//if ($GLOBALS['DEBUG_DEBUG'])
+		// 	//if (isset($GLOBALS['DEBUG_DEBUG']))
 		// }
 	}
 
@@ -450,7 +450,7 @@ class database
 	// executes oci statements, sets globals results var, return bool true on success
 	function execute($sql, $sizeVars)
 	{
-		if ($GLOBALS['DEBUG_DEBUG'])
+		if (isset($GLOBALS['DEBUG_DEBUG']))
 			$this->showQuery($sql, $sizeVars);
 		$this->t_start = microtime(true);
 
@@ -514,13 +514,13 @@ class database
 			$this->connect();
 
 		if (!$this->connID || !$login || !$password) {
-			if ($GLOBALS['DEBUG_DEBUG'])
+			if (isset($GLOBALS['DEBUG_DEBUG']))
 				$GLOBALS['debugEchos_data'] .= '<big>########## No connnection!!!!!!!!!!!!!!!!!!!!!</big><br>';
 			return false;
 		}
 
 		$testConn = @oci_connect($login, $password, $this->identifier);
-		if ($GLOBALS['DEBUG_DEBUG']) {
+		if (isset($GLOBALS['DEBUG_DEBUG'])) {
 			$GLOBALS['debugEchos_data'] .= $this->echoDebug($testConn, 'LOGIN DB CONNECTION - test_login', 'blue');
 		}
 
@@ -529,12 +529,12 @@ class database
 		$password = 'password_trash';
 		if ($testConn !== false) {
 			$this->setOciError('Connect'); // For oci_connect errors do not pass a handle
-			if ($GLOBALS['DEBUG_DEBUG'])
+			if (isset($GLOBALS['DEBUG_DEBUG']))
 				$GLOBALS['debugEchos_data'] .= $this->echoDebug($testConn, 'LOGIN DB Disconnect', 'grey');
 			oci_close($testConn);
 			return true;
 		} else {
-			if ($GLOBALS['DEBUG_DEBUG'])
+			if (isset($GLOBALS['DEBUG_DEBUG']))
 				$GLOBALS['debugEchos_data'] .= '<big>########## No LOGIN connnection!!!!!!!!!!!!!!!!!!!!!</big><br>';
 			return false;
 		}
@@ -565,11 +565,11 @@ class database
 	function disConnect()
 	{
 		if ($this->connID) {
-			if ($GLOBALS['DEBUG_DEBUG'])
+			if (isset($GLOBALS['DEBUG_DEBUG']))
 				$tmpCn = $this->connID;
 			oci_close($this->connID);
 			$this->ppp = '*';
-			if ($GLOBALS['DEBUG_DEBUG'])
+			if (isset($GLOBALS['DEBUG_DEBUG']))
 				$GLOBALS['debugEchos_data'] .= $this->echoDebug($tmpCn, 'DB Disconnect', 'grey');
 		}
 	}
@@ -581,7 +581,7 @@ class database
 
 		$this->error = oci_error($rid);
 
-		if (!$is_www2 && @!$GLOBALS['alreadyInternalMsg']) {
+		if (!$is_www2 && !isset($GLOBALS['alreadyInternalMsg'])) {
 			$GLOBALS['alreadyInternalMsg'] = true;
 			echo '<div align="center" style="border:3px solid #cc3300; padding:4px; margin:28px 8px 28px 8px; font-family:Courier; color:#cc3300; font-weight:bold; font-size:1.1em;">';
 			echo 'Internal Error Message: Probable heavy database congestion, please try again in a few seconds.' . "</div>\n";
@@ -626,11 +626,11 @@ class database
 		}
 		$errMsg .= "</small>";
 
-		if (@$GLOBALS['DEBUG_ERROR'] && $query_pp)
+		if (isset($GLOBALS['DEBUG_ERROR']) && $query_pp)
 			$errMsg .= $this->pretty_print_query($query_pp, $vars);
 		$errMsg .= "</div></pre>\n";
 
-		if (@$GLOBALS['DEBUG_ERROR'])
+		if (isset($GLOBALS['DEBUG_ERROR']))
 			echo $errMsg;
 
 		$outFname = dirname(__FILE__).'/database_error_log.htm';
@@ -666,7 +666,7 @@ class database
 			$this->connID = oci_connect($this->uuu, $this->ppp, $this->identifier);
 			$this->ppp = '**';
 
-			// if ($GLOBALS['DEBUG_DEBUG']) {
+			// if (isset($GLOBALS['DEBUG_DEBUG'])) {
 			// 	$GLOBALS['debugEchos_data'] .= $this->echoDebug($this->connID, 'DB CONNECTION');
 			// }
 		}
