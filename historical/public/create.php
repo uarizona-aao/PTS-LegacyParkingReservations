@@ -76,6 +76,7 @@ if ($_SESSION['cuinfo']['auth'] >= 2) // Note that as of AUG-08 we need to only 
 	{
 		echo generateResReceipt($_GET['res']);
 	}
+	// if confirmed after resform
 	elseif (@$_POST['confirm'] && trim($_POST['garage']))
 	{
 			if ($_POST['groupGuest']=="group") {
@@ -126,6 +127,7 @@ if ($_SESSION['cuinfo']['auth'] >= 2) // Note that as of AUG-08 we need to only 
 			echo $res->errorOut("noConf");
 		}
 	}
+	// From resform submit
 	elseif (isset($_POST['reserve']) || isset($_POST['reserve_x']))
 	{
 		//================= confirmation and agreement ===================

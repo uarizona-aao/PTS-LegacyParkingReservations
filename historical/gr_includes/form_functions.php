@@ -17,9 +17,9 @@ function getVal ($array,$search,$index=false,$false='') {
 	else return $false;
 }
 
-//function writeHelp ($topic) {
-//	return "<a href=\"javascript:needHelp('$topic');".'"><img src="/images/icons/help.gif" width="20" height="20" alt="Click for Help" align="absmiddle" border="0"/></a>';
-//}
+function writeHelp ($topic) {
+	return "<a href=\"javascript:needHelp('$topic');".'"><img src="/images/icons/help.gif" width="20" height="20" alt="Click for Help" align="absmiddle" border="0"/></a>';
+}
 
 function fixPost (&$val,$key) {
 	$search = array("\""," & ","''");

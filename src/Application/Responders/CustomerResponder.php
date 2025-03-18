@@ -20,4 +20,11 @@ class CustomerResponder {
             'customer_home.html.twig', 
             $data);
     }
+
+    public function create(Response $response, array $data) {
+        return $this->view->render(
+            $response, 
+            'customer_create.html.twig', 
+            $data);
+    }  
 }

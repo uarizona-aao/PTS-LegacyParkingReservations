@@ -1,0 +1,44 @@
+{% extends 'components/base_layout.html.twig' %}
+
+{% block content %}
+
+<div id="garageInfoModel" class="modal fade " role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header" style="border-bottom:1px solid #FF0000;">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h3 class="modal-title "  id="garageModelTitle"></h3>
+      </div>
+      <div class="modal-body">
+        <p><span style="color:#FF0000;font-weight:650;">NEW: </span>  <span id="infoGaragename" style="font-weight:650;"></span> is now gateless. 
+		Your guest(s) will now need a <span  style="font-weight:550;color:#378DBD">validation code</span> to park since there are no longer gate arms at 
+		the entrance or exit. <br><br><b>Please continue</b> making your reservation and we will send you a separate email with the <span  style="font-weight:550;color:#378DBD">validation code(s)</span> 
+		and instructions for your guest.  </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+$( document ).ready(function() {
+	$('#garageSelectControl').on('change',function(e) {
+		var garSelected=$(this).val();
+		console.log(garSelected);
+		if (garSelected==='7' || garSelected==='13') {
+			var gText=$("#garageSelectControl option:selected").text();
+			$('#infoGaragename').html(gText);
+			$('#garageModelTitle').html('<span style="color:#FF0000;font-weight:650;">ATTENTION: &nbsp;</span><span style="font-weight:650;">'+  gText + '</span>')
+			$('#garageInfoModel').modal();
+					
+		}
+		
+	})
+});
+</script>
+{% endblock %}
