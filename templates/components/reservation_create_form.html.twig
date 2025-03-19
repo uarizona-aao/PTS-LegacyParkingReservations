@@ -1,0 +1,158 @@
+{% set res_id = get['id'] is defined and get['id'] matches '/^[a-zA-Z0-9]+$/' ? get['id'] : '' %}
+{% set frsCheckSrc = "frscheck" %}
+{% if reservation.FRS_FK is defined %}
+    {% set frsCheckSrc = frsCheckSrc ~ "?frs=" ~ reservation.FRS_FK ~ "&cust=" ~ customer.userid %}
+{% endif %}
+
+{%  macro needHelp(term) %}
+    <a href="javascript:needHelp('{{ term }}');"><img src="/images/icons/help.gif" width="20" height="20" alt="Click for Help" align="absmiddle" border="0"/></a>
+{% endmacro %}
+
+{% macro writeCal(type) %}
+    <a href="javascript:openCal('{{ type }}');"><img src="/images/calendar.gif" border="0"/></a>
+{% endmacro %}
+
+{% block content %}
+
+<!-- a pile of relevant includes -->
+<script type="text/javascript" src="/js/jquery-timepicker-master/jquery.timepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="/js/jquery-timepicker-master/jquery.timepicker.css" />
+<span id="biomed" style="padding:0; color:#C03; font-weight:normal; font-size:18px; background-color:white;"></span>
+<script type="text/javascript" src="/js/jquery-datepicker/js/jquery-ui-1.11.1.js"></script>
+<script type="text/javascript" src="/js/jquery-datepicker/jquery-ui.multidatespicker.js"></script>
+<link rel="stylesheet" type="text/css" href="/js/jquery-datepicker/css/mdp-new.css">
+<script language="JavaScript" type="text/javascript" src="/js/forms.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/base.js"></script>
+
+<script language="JavaScript" type="text/javascript">
+function checkFormRes () {
+
+	var dateRe = /[0-9]{2}\/[0-9]{2}\/20[0-9]{2}/;
+	var timeRe = /[0-9]{1,2}\:[0-9]{2}\s[AM|am|PM|pm]{2}/;
+	var numRe = /[0-9]+/;
+	var dateReturn = "";
+	var alerts = "";
+	var daDates = new Array();
+	var dates_str = $('#multiDateBox').multiDatesPicker('getDates');
+
+	with (document.resForm) {
+
+		if ((window.RegExp && !frsRe.test(frs.value)))
+			alerts += "Please enter a valid KFS number\n";
+		else if (frames['frsCheckFrame'].document.images.validity.src.indexOf("/invalid.gif")>0)
+			alerts += "You do not have access to this KFS number\n";
+
+		dates.value = dates_str;
+		if (!dates.value)
+			alerts += "Please select at least one Reservation Date\n";
+
+
+
+		// Trim spaces, and add, if nessassary
+		//		var enterTimeStr = String(enterTime.value);
+		//		enterTimeStr = enterTimeStr.replace(/\s+$/i, ""); // trim space
+		//		enterTimeStr = enterTimeStr.replace(/^\s+/i, ""); // trim space
+		//		enterTimeStr = enterTimeStr.replace(/(\d)([AP]M)$/i, "$1 $2"); // inset a space
+		//		enterTime.value = enterTimeStr;
+		//		var exitTimeStr = String(exitTime.value);
+		//		exitTimeStr = exitTimeStr.replace(/\s+$/i, ""); // trim space
+		//		exitTimeStr = exitTimeStr.replace(/^\s+/i, ""); // trim space
+		//		exitTimeStr = exitTimeStr.replace(/(\d)([AP]M)$/i, "$1 $2"); // inset a space
+		//		exitTimeStr = exitTimeStr.replace(/12:00 AM/i, "11:59 PM"); // inset a space
+		//		exitTime.value = exitTimeStr;
+
+
+		// Make sure start time is not before end time.
+		var dtStart	= new Date("1/1/2007 " + enterTime.value);
+		var dtEnd	= new Date("1/1/2007 " + exitTime.value);
+		diff_in_millisec_a = dtEnd - dtStart;
+		if (diff_in_millisec_a < 0)
+			alerts += "End time is before Start time!\n";
+		if (!enterTime.value || !exitTime.value)
+			alerts += "Please enter 'Enter Time' and 'Exit Time'\n";
+
+
+		if (!garage.value)
+			alerts += "Please select a garage\n";
+
+		// guest list
+		if (groupGuest[0].checked) {
+			if (guestName.value)
+				alerts += "Please click 'Add Guest' to add the guest name to your guest list, or please remove the guest name from the box\n";
+			else if (!guestListBox.options.length || guestListBox.options[0].text=="Please Add Guests to Continue") {
+				if (guestName.value)
+					alerts += "Please click 'Add Guest' to add the guest to your guest list\n";
+				else
+					alerts += "Please enter at least one guest in the guest list\n";
+			}
+			else {
+				for (var i=0; i<guestListBox.options.length; i++) {
+					if (guestList.value)
+						guestList.value += " | ";
+					guestList.value += guestListBox.options[i].text;
+				}
+			}
+			//if (!laddGuests.value || laddGuests.value==' ') alerts += "Please enter a number for Additional Guests\n";
+			//else if ((window.RegExp && !numRe.test(laddGuests.value))) alerts += "Numbers only in the Additional Guests field\n";
+		}
+		// group
+		else {
+			if (!groupName.value)
+				alerts += "Please enter the group name\n";
+			if ((window.RegExp && !numRe.test(spaces.value)) || !spaces.value.length || spaces.value==' '){
+				alerts += "Please enter a number of spaces\n";
+			}else if (!spaces.value || spaces.value=="0" || spaces.value=="00"){
+				alerts += "Number of spaces must be greater than 0\n";
+			}
+			//if (!gaddGuests.value) alerts += "Please enter a number for Additional Guests\n";
+			//else if ((window.RegExp && !numRe.test(gaddGuests.value)) || gaddGuests.value==' ') alerts += "Numbers only in the Additional Guests field\n";
+		}
+	}
+
+	if (alerts) {
+		alert(alerts);
+		return false;
+	}
+}
+</script>
+
+<h2>
+{{ mode == 'create' ? 'Make a Reservation' : "Edit Reservation " + reservation.RESERVATION_ID }}
+</h2>
+{{ error }}
+<div class="resBox">
+<form name="resForm" method="POST" action="?id={{ res_id }}" onSubmit="return checkFormRes();">
+    <p class="title">General Info:</p>
+	<table border="0" cellpadding="0" cellspacing="0" width="670">
+        <tr valign="middle">
+            <td class="req">Name:</td>
+            <td colspan="3" style="">{{ reservation.USER_NAME is defined ? reservation.USER_NAME : customer.username }}</td>
+        </tr>
+
+        <tr valign="middle">
+            <td class="req">{{ _self.needHelp('kfs') }} KFS Number:</td>
+            <td class="field" colspan="3" width="380">
+            <div style="float:left; width:65px;">
+                <input type="text" name="frs" size="10" maxlength="7" onBlur="checkFrs(this.value,'{{ customer.userid }}');" value="{{ reservation.FRS_FK is defined ? reservation.FRS_FK : 0 }}"/>
+            </div>
+            <div style="float:left; display:{{ reservation.FRS_FK is defined ? 'none' : 'block' }}; width:10px; height:12px;" id="frsCheckDiv">
+                <iframe name="frsCheckFrame" src="{{ frsCheckSrc }}"
+                    style="width:350px; height:250px;" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
+            </div>
+            </td>
+        </tr>
+
+        <tr valign="middle">
+            <td class="noreq">KFS Sub Acct.: </td>
+            <td colspan="3" class="field" style="white-space:nowrap;">
+            <input type="text" name="KFS_SUB_ACCOUNT_FK" value="{{ reservation.KFS_SUB_ACCOUNT_FK is defined ? reservation.KFS_SUB_ACCOUNT_FK : '' }}" size="5" maxlength="5" />
+            &nbsp;<strong>Sub Obj. Code:</strong>
+            <input type="text" name="KFS_SUB_OBJECT_CODE_FK" value="{{ reservation.KFS_SUB_ACCOUNT_FK is defined ? reservation.KFS_SUB_ACCOUNT_FK : '' }}" size="3" maxlength="3" />
+            </td>
+	    </tr>
+
+    </table>
+</form>
+</div>
+
+{% endblock %}

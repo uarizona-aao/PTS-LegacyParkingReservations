@@ -9,6 +9,8 @@ use App\Infrastructure\Database\database;
 use App\Application\Responders\CustomerResponder;
 use App\Infrastructure\Database\reservation;
 
+include_once __DIR__.'/../../../form_functions.php';
+
 class CreateCustomerViewAction extends CustomerAction
 {
     private CustomerResponder $customerResponder;
@@ -22,14 +24,19 @@ class CreateCustomerViewAction extends CustomerAction
      */
     protected function action(): Response
     {
+        $customer = $_SESSION['cuinfo'];
+        $userid   = $customer['userid'];
         $data = [
             'receipt' => '', // Content for receipt
             'error' => '',
+            'mode' => 'create',
+            'customer' => $customer,
+            'reservation' => [],
+            'db_reservation' => [], // this is for $res object if we instantiate it.
         ];
-        $customer = $_SESSION['cuinfo'];
-        $userid   = $customer['userid'];
 
-        if (@$_SESSION['resConfirmed'])
+
+        if (isset($_SESSION['resConfirmed']))
         {
             // $_SESSION['resConfirmed'] set and then un-set below, so as to take care of possible Back button problem in browser.
             unset($_SESSION['resConfirmed']);
@@ -42,7 +49,7 @@ class CreateCustomerViewAction extends CustomerAction
             $data['receipt'] = generateResReceipt($_GET['res']);
         }
         // actually confirmed order
-        elseif (@$_POST['confirm'] && trim($_POST['garage']))
+        elseif (isset($_POST['confirm']) && trim($_POST['garage']))
         {
             // option handling
             if ($_POST['groupGuest']=="group") {
@@ -67,7 +74,7 @@ class CreateCustomerViewAction extends CustomerAction
             $_SESSION['resConfirmed'] = 0;
 
             if ($res->error) {
-                // TODO figure this out
+                // TODO this creates an error and redirects back to the original form
                 // $errMsg = $res->errorOut($res->error,$res->errordate);
                 // $resInfo = array();
                 // $glg = '';
@@ -82,9 +89,8 @@ class CreateCustomerViewAction extends CustomerAction
                 // this 
                 $data['error'] = $res->errorOut("noConf");
             }
-        // We submitted the initial resform...
+        // We submitted the initial resform and are doing checks...
         } elseif (isset($_POST['reserve']) || isset($_POST['reserve_x'])) {
-
             //================= confirmation and agreement ===================
             array_walk($_POST,"fixPost");
             $dates = explode(",",$_POST['dates']);
@@ -104,31 +110,28 @@ class CreateCustomerViewAction extends CustomerAction
 
             // TODO generate FORM somehow? Move it to customer_create?
         } else {
-            // Generate the basic submit form
-
-            // $resInfo = array();
-            // $glg = '';
-            // massagePost($resInfo, $glg);
-            // $cancelUri = "index.php";
-            // // Resform html stuff here...
-            // include_once 'resform.php';
+            // Generate the basic submit form when you start
+            $resInfo = array();
+            $glg = '';
+            self::massagePost($resInfo, $glg);
+            $data['reservation'] = $resInfo;
+            // Return the basic form for order creation
+            return $this->customerResponder->create($this->response, $data);
         }
-    
-        return $this->customerResponder->create($this->response, $data);
     }
 
     public static function stripBadChars() {
-        if (@$_POST['guestList'])
+        if (isset($_POST['guestList']))
             $_POST['guestList'] = preg_replace('/[^ \|\d\w]/i', '', $_POST['guestList']);
-        if (@$_POST['guestName'])
+        if (isset($_POST['guestName']))
             $_POST['guestName'] = preg_replace('/[^ \|\d\w]/i', '', $_POST['guestName']);
-        if (@$_POST['laddGuests'])
+        if (isset($_POST['laddGuests']))
             $_POST['laddGuests'] = preg_replace('/[^ \|\d\w]/i', '', $_POST['laddGuests']);
-        if (@$_POST['groupName'])
+        if (isset($_POST['groupName']))
             $_POST['groupName'] = preg_replace('/[^ \d\w]/i', '', $_POST['groupName']);
-        if (@$_POST['spaces'])
+        if (isset($_POST['spaces']))
             $_POST['spaces'] = preg_replace('/[^ \|\d\w]/i', '', $_POST['spaces']);
-        if (@$_POST['gaddGuests'])
+        if (isset($_POST['gaddGuests']))
             $_POST['gaddGuests'] = preg_replace('/[^ \|\d\w]/i', '', $_POST['gaddGuests']);
     }
 
@@ -136,23 +139,23 @@ class CreateCustomerViewAction extends CustomerAction
         if (isset($change)) {
             array_walk($_POST, "fixPost");
             $resInfo = array(
-                "FRS_FK"=>$_POST['frs'],
-                "KFS_SUB_ACCOUNT_FK"=>$_POST['KFS_SUB_ACCOUNT_FK'],
-                "KFS_SUB_OBJECT_CODE_FK"=>$_POST['KFS_SUB_OBJECT_CODE_FK'],
-                "RESDATE"=>$_POST['startDate'],
-                "RESSTART"=>$_POST['enterTime'],
-                "RESEND"=>$_POST['exitTime'],
-                "GARAGE_ID_FK"=>$_POST['garage']
+                "FRS_FK"=>$_POST['frs'] ?? null,
+                "KFS_SUB_ACCOUNT_FK"=>$_POST['KFS_SUB_ACCOUNT_FK'] ?? null,
+                "KFS_SUB_OBJECT_CODE_FK"=>$_POST['KFS_SUB_OBJECT_CODE_FK'] ?? null,
+                "RESDATE"=>$_POST['startDate'] ?? null,
+                "RESSTART"=>$_POST['enterTime'] ?? null,
+                "RESEND"=>$_POST['exitTime'] ?? null,
+                "GARAGE_ID_FK"=>$_POST['garage'] ?? null,
             );
-            $glg = $_POST['groupGuest'];
+            $glg = $_POST['groupGuest'] ?? $glg;
             if ($glg=="group") {
-                $resInfo['GUEST_NAME'] = $_POST['groupName'];
-                $resInfo['GROUP_SIZE'] = $_POST['spaces'];
-                $resInfo['GUESTS_OFFCAMPUS'] = $_POST['gaddGuests'];
+                $resInfo['GUEST_NAME'] = $_POST['groupName'] ?? '';
+                $resInfo['GROUP_SIZE'] = $_POST['spaces'] ?? 0;
+                $resInfo['GUESTS_OFFCAMPUS'] = $_POST['gaddGuests'] ?? '';
             }
             else {
-                $resInfo['guestList'] = $_POST['guestList'];
-                $resInfo['GUESTS_OFFCAMPUS'] = $_POST['laddGuests'];
+                $resInfo['guestList'] = $_POST['guestList'] ?? null;
+                $resInfo['GUESTS_OFFCAMPUS'] = $_POST['laddGuests'] ?? null;
             }
             if (isset($_POST['allowExtra'])) $resInfo['ALLOW_EXTRA'] = 1;
             if (isset($_POST['comeGo'])) $resInfo['COME_AND_GO'] = 1;

@@ -16,23 +16,15 @@ return function (App $app) {
         return $response;
     });
 
-    // Main landing page for users
-    $app->get('/', function (Request $request, Response $response) {
-        // Relevant fetches of data
-        // Testing instead if we can invoke $this->dependencies customer responder
-
-        // Configure the environment.
-        $view = Twig::fromRequest($request);
-        $view->getEnvironment()->addGlobal('user', $_SESSION['eds_data'] ?? null);
-        $view->getEnvironment()->addGlobal('get', $_GET);
-
-        return $view->render($response, 'customer_home.html.twig', [
-            'user' => $_SESSION['eds_data'] ?? null,
-        ]);
-    });
-    
+    // Customer-related pieces
     $app->get('/', GetCustomerViewAction::class);
     $app->map(['GET', 'POST'], '/create', CreateCustomerViewAction::class);
+
+    // TODO help route if we can find gr_help.php?
+    $app->get('/frscheck', function (Request $request, Response $response) { 
+        $response->getBody()->write("Hello World!");
+        return $response;
+    });
 
     // $app->group('/users', function (Group $group) {
     //     $group->get('', ListUsersAction::class);
