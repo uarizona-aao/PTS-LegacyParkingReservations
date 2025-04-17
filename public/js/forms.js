@@ -127,13 +127,38 @@ function guestGroup (which) {
 
 var frsCheck = false;
 var frsRe = /[0-9a-zA-Z]{6,7}/;
-function checkFrs (frs, cust) {
-	// Called from resform.php, where cust is $customer['userid']
-	// alert(frs + ',' + cust);
-	if (!frsRe.test(frs))
-		return false;
-	document.getElementById('frsCheckDiv').style.display = 'block';
-	frames["frsCheckFrame"].location.href='frscheck.php?frs='+frs+'&cust='+cust+'&noTopBottom=1';
+
+function checkFrs(frs, cust) {
+    // Validate the FRS format
+    if (!frsRe.test(frs)) {
+        document.getElementById('frsCheckSpan').innerHTML = '<b style="color:#CC0000;">KFS must be 7 characters.</b>';
+        document.getElementById('frsCheckSpan').style.display = 'block';
+        frsCheck = false;
+        return;
+    }
+
+    // Show the loading message
+    document.getElementById('frsCheckSpan').innerHTML = '<b><i>Checking...</i></b>';
+    document.getElementById('frsCheckSpan').style.display = 'block';
+
+    // Make an AJAX call to the /frscheck route
+    fetch(`/frscheck?frs=${encodeURIComponent(frs)}&cust=${encodeURIComponent(cust)}`)
+        .then(response => response.json())
+        .then(data => {
+			data = data.data || data; // Handle the case where data is nested
+            if (data.status === 'success') {
+                document.getElementById('frsCheckSpan').innerHTML = `<b style="color:green;">${data.message}</b>`;
+                frsCheck = true;
+            } else {
+                document.getElementById('frsCheckSpan').innerHTML = `<b style="color:#CC0000;">${data.message}</b>`;
+                frsCheck = false;
+            }
+        })
+        .catch(error => {
+            document.getElementById('frsCheckSpan').innerHTML = '<b style="color:#CC0000;">An error occurred while checking the FRS.</b>';
+            console.error('Error:', error);
+            frsCheck = false;
+        });
 }
 
 function loadFrs () {

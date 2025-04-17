@@ -18,7 +18,7 @@
 <script type="text/javascript" src="/js/jquery-timepicker-master/jquery.timepicker.js"></script>
 <link rel="stylesheet" type="text/css" href="/js/jquery-timepicker-master/jquery.timepicker.css" />
 <span id="biomed" style="padding:0; color:#C03; font-weight:normal; font-size:18px; background-color:white;"></span>
-<script type="text/javascript" src="/js/jquery-datepicker/js/jquery-ui-1.11.1.js"></script>
+{# <script type="text/javascript" src="/js/jquery-datepicker/js/jquery-ui-1.11.1.js"></script> #}
 <script type="text/javascript" src="/js/jquery-datepicker/jquery-ui.multidatespicker.js"></script>
 <link rel="stylesheet" type="text/css" href="/js/jquery-datepicker/css/mdp-new.css">
 <script language="JavaScript" type="text/javascript" src="/js/forms.js"></script>
@@ -132,14 +132,9 @@ function checkFormRes () {
         <tr valign="middle">
             <td class="req">{{ _self.needHelp('kfs') }} KFS Number:</td>
             <td class="field" colspan="3" width="380">
-            <div style="float:left; width:65px;">
-                <input type="text" name="frs" size="10" maxlength="7" onBlur="checkFrs(this.value,'{{ customer.userid }}');" value="{{ reservation.FRS_FK is defined ? reservation.FRS_FK : 0 }}"/>
-            </div>
-            <div style="float:left; display:{{ reservation.FRS_FK is defined ? 'none' : 'block' }}; width:10px; height:12px;" id="frsCheckDiv">
-                <iframe name="frsCheckFrame" src="{{ frsCheckSrc }}"
-                    style="width:350px; height:250px;" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
-            </div>
-            </td>
+				<input type="text" name="frs" size="10" maxlength="7" onBlur="checkFrs(this.value,'{{ customer.userid }}');" value="{{ reservation.FRS_FK is defined ? reservation.FRS_FK : 0 }}"/>
+				<span id="frsCheckSpan" style="display:{{ reservation.FRS_FK is defined ? 'none' : 'inline' }}"></span>
+			</td>
         </tr>
 
         <tr valign="middle">
