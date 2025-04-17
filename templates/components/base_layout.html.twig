@@ -44,10 +44,12 @@
 
 <!-- Optional JavaScript -->
 <!-- jQuery first, then Arizona Bootstrap JS -->
+{% if use_default_jquery is not defined or use_default_jquery %}
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.0/dist/jquery.slim.min.js" integrity="sha384-w5y/xIeYixWvfM+A1cEbmHPURnvyqmVg5eVENruEdDjcyRLUSNej7512JQGspFUr" crossorigin="anonymous"></script>
 <!-- Arizona Bootstrap -->
 <script src="https://cdn.digital.arizona.edu/lib/arizona-bootstrap/main/js/arizona-bootstrap.bundle.min.js"></script>
 <!-- other relevant jquery stuff that must be loaded after -->
+{% endif %}
 </body>
 </html>
 <!-- footer ends -->

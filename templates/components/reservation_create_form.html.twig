@@ -15,10 +15,11 @@
 {% block content %}
 
 <!-- a pile of relevant includes -->
+<script type="text/javascript" src="/js/jquery_2_1_0.js"></script>
 <script type="text/javascript" src="/js/jquery-timepicker-master/jquery.timepicker.js"></script>
 <link rel="stylesheet" type="text/css" href="/js/jquery-timepicker-master/jquery.timepicker.css" />
 <span id="biomed" style="padding:0; color:#C03; font-weight:normal; font-size:18px; background-color:white;"></span>
-{# <script type="text/javascript" src="/js/jquery-datepicker/js/jquery-ui-1.11.1.js"></script> #}
+<script type="text/javascript" src="/js/jquery-datepicker/js/jquery-ui-1.11.1.js"></script>
 <script type="text/javascript" src="/js/jquery-datepicker/jquery-ui.multidatespicker.js"></script>
 <link rel="stylesheet" type="text/css" href="/js/jquery-datepicker/css/mdp-new.css">
 <script language="JavaScript" type="text/javascript" src="/js/forms.js"></script>
@@ -146,8 +147,71 @@ function checkFormRes () {
             </td>
 	    </tr>
 
-    </table>
-</form>
+		<tr valign="middle">
+			<td class="req">{{ _self.needHelp('resdate') }} Reservation Date(s):</td>
+			<td colspan="3">
+				<div id="multiDateBox" class="box"></div>
+				<input type="hidden" name="dates" value="{{ redDates }}" />
+				<script>
+					$('#multiDateBox').multiDatesPicker({
+						minDate: 1,
+						{{ addDatesStr ? "addDates: [" ~ addDatesStr ~ "]," : '' }}
+						{{ defaultDateStr ? "defaultDate: '" ~ defaultDateStr ~ "'," : '' }}
+						{{ maxDatePicks|default('') }}
+					});
+				</script>
+			</td>
+		</tr>
+
+            <tr valign="middle">
+                <td class="req">{{ _self.needHelp('entertime') }} Enter Time:</td>
+                <td class="field">
+                    <input id="enterTime" name="enterTime" type="text" value="{{ reservation.RESSTART|default('') }}" maxlength="8" class="time" />
+                    <script>
+                        $(function() {
+                            $('#enterTime').timepicker({
+                                'timeFormat': 'h:i A',
+                                'step': 15,
+                                'minTime': '5:00am',
+                                'maxTime': '11:30pm',
+                                'scrollDefault': '{{ reservation.RESSTART|default('') }}',
+                            });
+                        });
+                    </script>
+                </td>
+
+			<td class="req">{{ _self.needHelp('exittime') }} Exit Time:</td>
+                <td class="field">
+                    <input id="exitTime" name="exitTime" type="text" value="{{ reservation.RESEND|default('') }}" maxlength="8" class="time" />
+                    <script>
+                        $(function() {
+                            $('#exitTime').timepicker({
+                                'timeFormat': 'h:i A',
+                                'step': 15,
+                                'minTime': '5:15am',
+                                'maxTime': '11:59pm',
+                                'scrollDefault': '{{ reservation.RESEND|default('') }}',
+                            });
+                        });
+                    </script>
+                </td>
+            </tr>
+
+            <tr valign="middle">
+                <td class="req">{{ _self.needHelp('garage') }} Garage:</td>
+                <td class="field" colspan="3">
+                    <select name="garage" id="garageSelectControl">
+                        <option value="" selected>Select a Parking Area</option>
+                        {{ garageOptions|raw }}
+                    </select>
+                </td>
+            </tr>
+        </table>
+
+        <p align="center">
+            <input type="image" src="/images/reserve-button.gif" width="120" height="25" alt="Reserve" align="absmiddle" name="reserve"/>
+        </p>
+    </form>
 </div>
 
 {% endblock %}

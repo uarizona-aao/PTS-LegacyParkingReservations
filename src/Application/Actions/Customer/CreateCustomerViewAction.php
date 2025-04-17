@@ -26,6 +26,10 @@ class CreateCustomerViewAction extends CustomerAction
     {
         $customer = $_SESSION['cuinfo'];
         $userid   = $customer['userid'];
+        $redDates = isset($resInfo['RESDATE']) ? $resInfo['RESDATE'] : '';
+        $defaultDateStr = $redDates ? explode(',', $redDates)[0] : '';
+        $addDatesStr = $redDates ? implode(',', array_map(fn($date) => "'$date'", explode(',', $redDates))) : '';
+
         $data = [
             'receipt' => '', // Content for receipt
             'error' => '',
@@ -33,6 +37,12 @@ class CreateCustomerViewAction extends CustomerAction
             'customer' => $customer,
             'reservation' => [],
             'db_reservation' => [], // this is for $res object if we instantiate it.
+            'redDates' => $redDates,
+            'defaultDateStr' => $defaultDateStr,
+            'addDatesStr' => $addDatesStr,
+            'maxDatePicks' => 4,
+            'unselectDateMsg' => "Please unselect the date you wish to change.",
+            'use_default_jquery' => false, // bit for jquery fix.
         ];
 
 
