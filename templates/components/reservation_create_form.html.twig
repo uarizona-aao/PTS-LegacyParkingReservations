@@ -24,7 +24,8 @@
 <link rel="stylesheet" type="text/css" href="/js/jquery-datepicker/css/mdp-new.css">
 <script language="JavaScript" type="text/javascript" src="/js/forms.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/base.js"></script>
-
+<link rel="stylesheet" type="text/css" href="/css/bitbucket.org_uadigital_ua-bootstrap_downloads_ua-bootstrap-1.0.0-alpha4.min.css" />
+<link rel="stylesheet" type="text/css" href="/css/pts-global.css" />
 <script language="JavaScript" type="text/javascript">
 function checkFormRes () {
 
@@ -206,6 +207,96 @@ function checkFormRes () {
                 </td>
             </tr>
         </table>
+
+		<p class="title">Group/Guests:</p>
+		<div style="font-size:14px;">
+			<table border="0" cellpadding="0" cellspacing="0" bgcolor="#EEEEEE" style="border:solid 2px #003366;">
+				<tr valign="middle">
+					<td style="background-color:#003366; color:#FFFFFF; padding-right:5px;">
+						<input type="radio" name="groupGuest" value="guest" 
+							{% if glg == 'guest' %}checked{% endif %} 
+							onClick="guestGroup('guest');" />
+						<img src="/images/icons/guest.gif" width="45" height="47" alt="Guest" align="absmiddle" />
+						<b>Guest List</b>
+					</td>
+					<td style="padding:0 10px; font-size:11px;">
+						<i>(Enter a list of people to allow in)</i>
+					</td>
+					<td style="background-color:#F1F1F1;">&nbsp;</td>
+					<td style="color:#FFFFFF; background-color:#003366; padding-right:5px;">
+						<input type="radio" name="groupGuest" value="group" 
+							{% if glg == 'group' %}checked{% endif %} 
+							onClick="guestGroup('group');" />
+						<img src="/images/icons/group.gif" width="45" height="47" alt="Group" align="absmiddle" />
+						<b>Group</b>
+					</td>
+					<td style="padding:10px; font-size:11px;">
+						<i>(I do not know the guests' names<br/>and/or would not like to enter them)</i>
+					</td>
+				</tr>
+			</table>
+		</div>
+
+		<div id="group" style="display:{{ glg == 'group' ? 'block' : 'none' }}; clear:left;">
+			<table border="0" cellpadding="0" cellspacing="0">
+				<tr>
+					<td colspan="6" class="title">Group</td>
+				</tr>
+				<tr valign="middle">
+					<td class="req" colspan="2">{{ _self.needHelp('group') }} Group Name:</td>
+					<td class="field" colspan="4">
+						<input type="text" name="groupName" size="30" maxlength="30" 
+							value="{{ groupName }}" 
+							onkeyup="isAlphaNumeric('groupName');" />
+					</td>
+				</tr>
+				<tr valign="middle">
+					<td class="req" colspan="2">{{ _self.needHelp('spaces') }} Spaces:</td>
+					<td class="field" colspan="2">
+						<input type="text" name="spaces" size="3" maxlength="4" 
+							value="{{ groupSize }}" 
+							onkeyup="isNumeric('spaces');" />
+					</td>
+					<td colspan="2">&nbsp;</td>
+				</tr>
+			</table>
+		</div>
+
+		<div id="guest" style="display:{{ glg == 'guest' ? 'block' : 'none' }}; clear:left;">
+			<table border="0" cellpadding="0" cellspacing="0">
+				<tr valign="middle">
+					<td class="title" colspan="2">Add a Guest:</td>
+					<td class="title" colspan="2">Guest List:</td>
+				</tr>
+				<tr valign="middle">
+					<td class="req">{{ _self.needHelp('guestname') }} Guest Name:</td>
+					<td class="field">
+						<input type="text" name="guestName" maxlength="25" onkeyup="isAlphaNumeric('guestName');" />
+					</td>
+					<td class="req" rowspan="2">{{ _self.needHelp('guestlist') }} Guests:</td>
+					<td class="field" align="center" rowspan="2">
+						<select name="guestListBox" multiple>
+							{% if guestList is not empty %}
+								{% for guest in guestList %}
+									<option value="{{ guest }}">{{ guest }}</option>
+								{% endfor %}
+							{% else %}
+								<option value="">Please Add Guests to Continue</option>
+							{% endif %}
+						</select>
+						<input type="hidden" name="guestList" value="" />
+						<br />
+						<input type="button" value="Remove Selected Guest" class="submitter" onClick="removeGuest(this.form);" />
+					</td>
+				</tr>
+				<tr valign="middle">
+					<td colspan="2" valign="top" align="center" style="padding: 0 0 28px 42px;">
+						<input type="button" value="Add Guest" class="submitter" 
+							onClick="if(checkGuest()){addGuest(this.form.guestName.value, this.form);}" />
+					</td>
+				</tr>
+			</table>
+		</div>
 
         <p align="center">
             <input type="image" src="/images/reserve-button.gif" width="120" height="25" alt="Reserve" align="absmiddle" name="reserve"/>

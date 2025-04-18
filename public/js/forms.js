@@ -177,3 +177,28 @@ function loadFrs () {
 function needHelp (topic) {
 	if (topic) window.open("/help_gr.php?topic="+topic, "", "width=640,height=480,scrollbars=yes,menubar=yes,toolbar=yes,status=no,location=no,titlebar=no,directories=no,resizable=yes");
 }
+
+function isAlphaNumeric(fieldName) {
+	var fld = eval('document.resForm.' + fieldName);
+	if (fld.value && !fld.value.match(/^[a-zA-Z0-9 ]+$/)) {
+		alert('Names must only contain letters, digits, or blank spaces.');
+		fld.value = fld.value.replace(/[^a-zA-Z0-9 ]/g, '');
+	}
+}
+function isNumeric(fieldName) {
+	var fld = eval('document.resForm.' + fieldName);
+	if (fld.value && !fld.value.match(/^[0-9]+$/)) {
+		alert('Only digits please.');
+		fld.value = fld.value.replace(/[^0-9]/g, '');
+	}
+}
+
+function checkGuest() {
+	var nameformat = /\w+[,\.\']? +[,\.\']?\w+/;
+	if(nameformat.exec(document.resForm.guestName.value)==null) {
+	  alert("Please enter full name.");
+	  return false;
+	} else {
+		 return true;
+	}
+  }

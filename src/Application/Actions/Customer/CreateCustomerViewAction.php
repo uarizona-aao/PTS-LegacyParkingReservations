@@ -127,6 +127,10 @@ class CreateCustomerViewAction extends CustomerAction
             $glg = '';
             self::massagePost($resInfo, $glg);
             $data['reservation'] = $resInfo;
+            $data['glg'] = $glg ?? 'guest'; // Default to 'guest' if not set
+            $data['guestList'] = isset($resInfo['guestList']) ? explode(' | ', $resInfo['guestList']) : [];
+            $data['groupName'] = $resInfo['GUEST_NAME'] ?? '';
+            $data['groupSize'] = $resInfo['GROUP_SIZE'] ?? '';
             $data['garageOptions'] = garageOptions(getVal($resInfo, 'GARAGE_ID_FK', 0), "9006,USA,10003");
             // Return the basic form for order creation
             return $this->customerResponder->create($this->response, $data);
