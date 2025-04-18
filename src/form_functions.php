@@ -1,5 +1,5 @@
 <?php
-
+use App\Infrastructure\Database\database;
 
 function isChecked ($key,$true,$false) {
 	if (isset($_POST[$key]) && $_POST[$key]) return $true;

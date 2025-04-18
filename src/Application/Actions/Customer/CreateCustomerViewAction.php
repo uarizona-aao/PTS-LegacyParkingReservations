@@ -24,6 +24,7 @@ class CreateCustomerViewAction extends CustomerAction
      */
     protected function action(): Response
     {
+        include_once __DIR__.'/../../../form_functions.php';
         $customer = $_SESSION['cuinfo'];
         $userid   = $customer['userid'];
         $redDates = isset($resInfo['RESDATE']) ? $resInfo['RESDATE'] : '';
@@ -43,6 +44,7 @@ class CreateCustomerViewAction extends CustomerAction
             'maxDatePicks' => 4,
             'unselectDateMsg' => "Please unselect the date you wish to change.",
             'use_default_jquery' => false, // bit for jquery fix.
+            'garageOptions' => [],
         ];
 
 
@@ -125,6 +127,7 @@ class CreateCustomerViewAction extends CustomerAction
             $glg = '';
             self::massagePost($resInfo, $glg);
             $data['reservation'] = $resInfo;
+            $data['garageOptions'] = garageOptions(getVal($resInfo, 'GARAGE_ID_FK', 0), "9006,USA,10003");
             // Return the basic form for order creation
             return $this->customerResponder->create($this->response, $data);
         }
