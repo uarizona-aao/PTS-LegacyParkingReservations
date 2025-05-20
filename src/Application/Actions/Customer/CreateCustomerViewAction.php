@@ -103,7 +103,6 @@ class CreateCustomerViewAction extends CustomerAction
             }
         // We submitted the initial resform and are doing checks...
         } elseif (isset($_POST['reserve']) || isset($_POST['reserve_x'])) {
-            print "<pre>";var_dump($_POST);exit;
 
             //================= confirmation and agreement ===================
             array_walk($_POST,"fixPost");
@@ -122,7 +121,21 @@ class CreateCustomerViewAction extends CustomerAction
                 $get_p = '?id='.$_GET['id'];
             }
 
-            // TODO generate FORM somehow? Move it to customer_create?
+            $reservationData = [
+                'frs' => $_POST['frs'],
+                'kfs_sub_account_fk' => $_POST['KFS_SUB_ACCOUNT_FK'],
+                'kfs_sub_object_code_fk' => $_POST['KFS_SUB_OBJECT_CODE_FK'],
+                'dates' => explode(',', $_POST['dates']),
+                'enter_time' => $_POST['enterTime'],
+                'exit_time' => $_POST['exitTime'],
+                'garage_name' => getGarageByID($_POST['garage']),
+                'group_guest' => $_POST['groupGuest'],
+                'group_name' => $_POST['groupName'] ?? null,
+                'spaces' => $_POST['spaces'] ?? null,
+                'guest_list' => isset($_POST['guestList']) ? explode(' | ', $_POST['guestList']) : [],
+            ];
+            
+            return $this->customerResponder->agreement($this->response, ['reservation' => $reservationData]);
         } else {
             // Generate the basic submit form when you start
             $resInfo = array();

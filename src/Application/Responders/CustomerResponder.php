@@ -27,4 +27,11 @@ class CustomerResponder {
             'customer_create.html.twig', 
             $data);
     }  
+
+    public function agreement(Response $response, array $data) {
+        return $this->view->render(
+            $response, 
+            'reservation_agreement.html.twig', 
+            $data);
+    }
 }

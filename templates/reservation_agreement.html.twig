@@ -1,0 +1,73 @@
+{% extends 'components/base_layout.html.twig' %}
+
+{% block content %}
+
+<h2>Agreement and Confirmation</h2>
+
+<div align="left" style="margin:0 auto; width:800px; padding:20px; border:solid 2px #003366;">
+    <b>Please read the following, confirm your information below, and click "Accept and Confirm" below.</b>
+
+    <br/><br/>
+    I acknowledge that my department will be charged for all spaces and dates reserved, regardless of utilization, unless cancelled one business day in advance.
+    <br/><br/>
+    You may want to consider forwarding a copy of this to your business office for reconciliation.
+    <br/><br/>
+    I authorize Parking and Transportation Services to automatically charge the account number provided. I understand that the department should not send an Interdepartmental Billing Form (IBF). The charge will automatically post in FRS by the end of the month.
+    <br/><br/>
+
+
+    <div style="margin:0 auto; width:600px; text-align:left; border:solid 2px #000000; padding:0 100px;">
+        <h3>Reservation Details:</h3>
+        <p>
+            <b>KFS:</b> {{ reservation.frs }}<br/>
+            <b>KFS Sub Acct.:</b> {{ reservation.kfs_sub_account_fk }}<br/>
+            <b>Sub Obj. Code:</b> {{ reservation.kfs_sub_object_code_fk }}<br/>
+
+            {% if reservation.dates|length > 1 %}
+                <b>Date:</b> {{ reservation.dates|first }}<br/>
+                <b>Additional Dates:</b> {{ reservation.dates|slice(1)|join(', ') }}
+            {% else %}
+                <b>Date:</b> {{ reservation.dates|first }}
+            {% endif %}
+            <br/>
+            <b>Enter Time:</b> {{ reservation.enter_time }}<br/>
+            <b>Exit Time:</b> {{ reservation.exit_time }}<br/>
+
+            {% if reservation.garage_name matches '/bio.?med/si' %}
+                <b>Garage:</b> Phoenix BioMedical Campus<b>,</b>
+                <a href="http://parking.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf" target="_blank">
+                    Parking Lot 10002,&nbsp; 714 E Van Buren
+                </a>
+            {% else %}
+                <b>Garage:</b> {{ reservation.garage_name }}
+            {% endif %}
+            <br/>
+
+            {% if reservation.group_guest == 'group' %}
+                <b>Group Name:</b> {{ reservation.group_name }}<br/>
+                <b>Spaces:</b> {{ reservation.spaces }}<br/>
+            {% else %}
+                <b>Guest List:</b> {{ reservation.guest_list|join(' | ') }}<br/>
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<p align="center">
+    <input type="hidden" name="confirm" value="">
+    <input type="hidden" name="change" value="">
+
+    <input type="button" class="submitter" value="Accept and Confirm"
+           onclick="this.form.setAttribute('target', '_blank'); this.form.confirm.value=1; this.form.submit(); document.location.href='/parking/garage-reservation/?resConf=1';" />
+    &nbsp;
+    <input type="button" class="submitter" value="Make Changes" onclick="this.form.change.value=1; this.form.submit();" />
+    <br/>
+    <span style="color:#CC0000;">NOTE: When you Accept and Confirm a new window will open up.</span>
+</p>
+
+<p align="center">
+    <a href="index.php">
+        <img src="/images/cancelform-button.gif" width="120" height="25" alt="Cancel" align="absmiddle" border="0"/>
+    </a>
+</p>
+{% endblock %}
