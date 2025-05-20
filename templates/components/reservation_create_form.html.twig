@@ -36,15 +36,14 @@ function checkFormRes () {
 	var alerts = "";
 	var daDates = new Array();
 	var dates_str = $('#multiDateBox').multiDatesPicker('getDates');
-
 	with (document.resForm) {
 
-		if ((window.RegExp && !frsRe.test(frs.value)))
+		if ((window.RegExp && !frsRe.test(frs.value))) {
 			alerts += "Please enter a valid KFS number\n";
-		else if (frames['frsCheckFrame'].document.images.validity.src.indexOf("/invalid.gif")>0)
+		} else if (!$('#frsCheckSpan').text().includes('KFS is valid')) {
 			alerts += "You do not have access to this KFS number\n";
-
-		dates.value = dates_str;
+		}
+		dates.value = document.resForm.dates.value = dates_str;
 		if (!dates.value)
 			alerts += "Please select at least one Reservation Date\n";
 

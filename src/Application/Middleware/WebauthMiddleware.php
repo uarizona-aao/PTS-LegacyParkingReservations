@@ -36,6 +36,11 @@ class WebauthMiddleware implements Middleware
      */
     public function process(Request $request, RequestHandler $handler): Response
     {
+		// If selenium driver, bypass this as a cookie is being set for normal flows.
+		if ($_ENV['APP_ENV'] === 'development' && $request->getUri()->getPath() === '/selenium-cookie') {
+			return $handler->handle($request);
+		}
+
         $_SESSION['webauth_data'] = [];
         $webAuthBaseURL = "https://webauth.arizona.edu/webauth";
         $webAuthURL = "$webAuthBaseURL/login?service=";
@@ -44,6 +49,32 @@ class WebauthMiddleware implements Middleware
             . "://" . $serverParams['HTTP_HOST'] 
             . (strtok($serverParams['REQUEST_URI'], '?') ?: '');
 
+		// DEV-ONLY; checking for dev-auth-as' cookie
+		$cookies = $request->getCookieParams();
+		if (isset($cookies['dev-auth-as']) && !empty($cookies['dev-auth-as'])) {
+			// Simulate authentication using the 'dev-auth-as' cookie
+			$_SESSION['webauth_data']['netid'] = $cookies['dev-auth-as'];
+			$this->getEdsInfo($_SESSION['webauth_data']['netid']);
+			
+			// Set token
+			$seed = random_int(1000, 9999);
+			$inttoken = md5((string) $seed);
+			define('TOKEN2', $inttoken);
+			$_SESSION['user_token'] = $_SESSION['token2'] = $inttoken;
+			$_SESSION['resuser']['netid'] = $_SESSION['webauth_data']['netid'];
+			$_SESSION['resuser']['email'] = $_SESSION['eds_data']['mail'];
+			$_SESSION['resuser']['fullname'] = $_SESSION['eds_data']['sn'] . ', ' . $_SESSION['eds_data']['givenname'];
+			$_SESSION['resuser']['firstname'] = $_SESSION['eds_data']['givenname'];
+			$_SESSION['resuser']['lastname'] = $_SESSION['eds_data']['sn'];
+			$_SESSION['resuser']['phone'] = $_SESSION['eds_data']['employeephone'] ?? '';
+			$_SESSION['resuser']['customertype'] = "UA";
+	
+			// Also populate the auth data from GrLogin class implementation
+			$login = new GrLogin($_SESSION['webauth_data']['netid'], '', null);
+	
+			// Continue to the next middleware or route
+			return $handler->handle($request);
+		}
 
         // Check if the user is already authenticated
         if (!isset($_SESSION['user_token']) || empty($_SESSION['user_token'])) {

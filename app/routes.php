@@ -21,11 +21,14 @@ return function (App $app) {
     $app->get('/', GetCustomerViewAction::class);
     $app->map(['GET', 'POST'], '/create', CreateCustomerViewAction::class);
 
+    // Auth-bits for test env; this is not intended to be used outside of your local test environment with Selenium
+    if($_ENV['APP_ENV'] === "development") {
+        $app->get('/selenium-cookie', function ($request, $response, $args) {
+            echo "This page only serves to hook a cookie for the Selenium driver.";
+            exit;
+        });
+    }
+
     // TODO help route if we can find gr_help.php?
     $app->get('/frscheck', CheckFRSAction::class);
-
-    // $app->group('/users', function (Group $group) {
-    //     $group->get('', ListUsersAction::class);
-    //     $group->get('/{id}', ViewUserAction::class);
-    // });
 };

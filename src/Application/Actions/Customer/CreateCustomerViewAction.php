@@ -103,6 +103,8 @@ class CreateCustomerViewAction extends CustomerAction
             }
         // We submitted the initial resform and are doing checks...
         } elseif (isset($_POST['reserve']) || isset($_POST['reserve_x'])) {
+            print "<pre>";var_dump($_POST);exit;
+
             //================= confirmation and agreement ===================
             array_walk($_POST,"fixPost");
             $dates = explode(",",$_POST['dates']);
