@@ -202,6 +202,8 @@ class reservation {
 
 		if ($this->error) return false;
 
+		return false;
+
 		if ($spaces>25 && $customer['auth']<4) {
 			$this->error = 'groupSize';
 			return false;

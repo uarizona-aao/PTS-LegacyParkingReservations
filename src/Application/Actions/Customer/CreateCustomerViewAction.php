@@ -58,10 +58,10 @@ class CreateCustomerViewAction extends CustomerAction
         // done
         if (isset($_GET['res']))
         {
-            $data['receipt'] = generateResReceipt($_GET['res']);
+            $data['receipt'] = self::generateResReceipt($_GET['res']);
         }
         // actually confirmed order
-        elseif (isset($_POST['confirm']) && trim($_POST['garage']))
+        elseif (isset($_POST['confirm']) && trim($_POST['garage'] ?? ''))
         {
             // option handling
             if ($_POST['groupGuest']=="group") {
@@ -83,6 +83,7 @@ class CreateCustomerViewAction extends CustomerAction
             $_SESSION['resConfirmed'] = 1;
             // Create reservations and send confimration emails.
             $res->newRes($_POST['frs'], $_POST['KFS_SUB_ACCOUNT_FK'], $_POST['KFS_SUB_OBJECT_CODE_FK'], $customer, $_POST['garage'], $dates, $_POST['enterTime'], $_POST['exitTime'], $_POST['groupGuest'], $option1, $option2, $comeGo, isChecked("allowExtra","1","0"), $_POST[$addGuests]);
+            var_dump($res);exit;
             $_SESSION['resConfirmed'] = 0;
 
             if ($res->error) {
@@ -134,8 +135,16 @@ class CreateCustomerViewAction extends CustomerAction
                 'spaces' => $_POST['spaces'] ?? null,
                 'guest_list' => isset($_POST['guestList']) ? explode(' | ', $_POST['guestList']) : [],
             ];
+
+            $postData = $_POST;
+            array_walk($postData, function (&$val, $key) {
+                $val = str_replace('"', "''", stripslashes($val));
+            });
             
-            return $this->customerResponder->agreement($this->response, ['reservation' => $reservationData]);
+            return $this->customerResponder->agreement($this->response, [
+                'reservation' => $reservationData,
+                'post_data' => $postData
+            ]);
         } else {
             // Generate the basic submit form when you start
             $resInfo = array();
@@ -150,6 +159,37 @@ class CreateCustomerViewAction extends CustomerAction
             // Return the basic form for order creation
             return $this->customerResponder->create($this->response, $data);
         }
+    }
+
+    public static function generateResReceipt($conf) {
+        // instantiate the class
+        $res = new reservation();
+        // get the reservation info
+        $res->getRes($conf);
+        // get all of the class vars into a local array
+        $resInfo = @get_object_vars($res);
+        $return = "";
+        // if it worked (if not a class, it won't work)
+        if (is_array($resInfo)) {
+            // receipt header
+            echo '<div style="text-align:center; margin-top:20px;"><div style="margin:0 auto; text-align:left; width:800px; padding:20px; border:solid 5px #CCCCCC;">';
+            // never finished this, but it runs through the vars and displays them on a receipt
+            foreach ($res->resTranspose as $key=>$val) {
+                if (isset($resInfo[$key]) && $resInfo[$key]) {
+                    echo "<b>$val:</b> ";
+                    if (is_array($resInfo[$key])) implode($resInfo[$key]);
+                    elseif ($key=="allowextra" || $key=="comego") {
+                        if ($resInfo[$key]) echo "Yes";
+                        else echo "No";
+                    }
+                    else echo $resInfo[$key];
+                    echo "<br/>\n";
+                }
+            }
+            // receipt footer
+            echo "</div></div>\n";
+        }
+        return $return;
     }
 
     public static function stripBadChars() {
