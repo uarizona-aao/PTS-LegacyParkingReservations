@@ -81,16 +81,17 @@ class CreateCustomerViewAction extends CustomerAction
             $pdfConfirmFile = '';
 
             $_SESSION['resConfirmed'] = 1;
+
+
+            $wasEmailed = $res->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', 
+                "This message is to confirm that your parking reservation has been placed. 2 space(s) will be reserved in the Cherry Avenue Garage 06/15/2025 from 06:00 AM to 10:00 AM Guest List/Group Name: test This reservation will be billed to KFS account 1650000. Confirmation Number(s): 225318 Please share the following instructions with your guest: https://parking.arizona.edu/pdf/garage-instructions.pdf Visitor Programs UA Parking & Transportation Services 1117 E. Sixth Street Tucson, AZ 85721-0181 (520) 621-3710", "", "PTS-IT-Emails@email.arizona.edu");
+            var_dump($wasEmailed);
+            exit;
             // Create reservations and send confimration emails.
             $res->newRes($_POST['frs'], $_POST['KFS_SUB_ACCOUNT_FK'], $_POST['KFS_SUB_OBJECT_CODE_FK'], $customer, $_POST['garage'], 
                 $dates, $_POST['enterTime'], $_POST['exitTime'], $_POST['groupGuest'], 
                 $option1, $option2, $comeGo, isChecked("allowExtra","1","0"), $_POST[$addGuests] ?? '');
             $_SESSION['resConfirmed'] = 0;
-
-
-            print "<pre>";
-            var_dump($res);
-            exit;
 
             if ($res->error) {
                 // TODO this creates an error and redirects back to the original form

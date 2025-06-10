@@ -1,6 +1,8 @@
 <?php
 namespace App\Infrastructure\Database;
 use App\Application\ResponseEmitter\PDF\Cezpdf;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 
 class reservation {
 
@@ -555,12 +557,9 @@ class reservation {
    $text=$msg3;
    $result=mail($recipient, $subject, $msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
 		} else {
-			
-			mail($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
-			//mail('jbrabec@email.arizona.edu', 'Garage Reservation conf 2', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\n");
-			$wasEmailed = true;
-			
-			
+			$wasEmailed = $this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "", "PTS-IT-Emails@email.arizona.edu");
+			// mail($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
+			//mail('jbrabec@email.arizona.edu', 'Garage Reservation conf 2', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\n");			
 		}
 			
 			
@@ -580,7 +579,8 @@ class reservation {
 			$msg_err .= '~~~~~~~~~~~~~~ QUERY: ' . $wasInserted."\n\n";
 			$msg_err .= '~~~~~~~~~~~~~~ EMAIL MSG: ' . $msg1.$msg2.$msg3;
 			//	mail('jbrabec@email.arizona.edu', 'Garage Reservation Inserted but NOT emailed', $msg_err, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
-			mail('PTS-IT-Emails@email.arizona.edu', 'Garage Reservation Inserted but NOT emailed', $msg_err, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\n");
+			$this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Inserted but NOT emailed.', $msg_err, "");
+			// mail('PTS-IT-Emails@email.arizona.edu', 'Garage Reservation Inserted but NOT emailed', $msg_err, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\n");
 		}
 	}
 
@@ -1133,6 +1133,50 @@ class reservation {
 		$return .= ": {$errors[$error]}</div></div>\n";
 		//if ($error=='db') mail("PTS-IT-Emails@email.arizona.edu","GR DB Error",$this->errormsg,"From: PTS-IT-Emails@email.arizona.edu");
 		return $return;
+	}
+
+	// $result=mail($recipient, $subject, $msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
+	function send_email($recipient, $subject, $message, $from = '', $bcc = '') {
+		$mail = new PHPMailer(true);
+
+		// Load env if not already loaded
+		$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__.'/../../..');
+		$dotenv->load();
+		try {
+			// Server settings
+			$mail->isSMTP();
+			$mail->Host = $_ENV['MAIL_HOST']; // Set the SMTP server to send through
+			$mail->SMTPAuth = true;
+			$mail->Username = $_ENV['MAIL_USERNAME']; // SMTP username
+			$mail->Password = $_ENV['MAIL_PASSWORD']; // SMTP password
+			$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+			$mail->Port = 587;
+			// Recipients
+			if ($from != '') {
+				$mail->setFrom($from); // Set custom from address if provided
+			} else {
+				// Default from address
+				$mail->setFrom('baas-aws-ses@arizona.edu', 'PTS Visitor Programs');
+			}
+			$mail->addAddress($recipient); // Add recipient email
+			if($bcc != '') {
+				$mail->addBCC($bcc); // Add BCC if provided
+			}
+
+			// Content
+			$mail->isHTML(true);
+			$mail->Subject = $subject;
+			$mail->Body = $message;
+
+			$mail->send();
+			$wasEmailed = true;
+		} catch (Exception $e) {
+			$wasEmailed = false;
+			error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
+			echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+		}
+
+		return $wasEmailed;
 	}
 }
 ?>
