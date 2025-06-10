@@ -70,7 +70,7 @@ class reservation {
 	var $KFS_SUB_ACCOUNT_FK;
 	var $KFS_SUB_OBJECT_CODE_FK;
 	var $guestList;
-    public array $groupCount;
+    var $groupCount;
 	var $garageName;
 	var $deptName;
 	var $userName;
@@ -107,6 +107,8 @@ class reservation {
 		$query = "SELECT U.USER_ID FROM PARKING.GR_FRS F INNER JOIN
 			(PARKING.GR_USER_DEPARTMENT D INNER JOIN PARKING.GR_USER U ON USER_ID = USER_ID_FK) ON F.DEPT_NO_FK = D.DEPT_NO_FK
 			WHERE FRS = '$frs'";
+		var_dump("Query 1;");
+		var_dump($query);
 		$dbConn->query($query);
 		if (!$dbConn->rows) return 'frs-notfound';
 		if (!in_array($customer['userid'],$dbConn->results['USER_ID'])) return 'frs-access';
@@ -132,7 +134,7 @@ class reservation {
 
 
 
-	function newRes ($frs,$KFS_SUB_ACCOUNT_FK,$KFS_SUB_OBJECT_CODE_FK,$customer,$garageid,$dates,$stime,$etime,$gg,$option1,$option2,$comeGo,$extra,$addGuests,$notes=false)
+	function newRes ($frs,$KFS_SUB_ACCOUNT_FK,$KFS_SUB_OBJECT_CODE_FK,$customer,$garageid,$dates,$stime,$etime,$gg,$option1,$option2,$comeGo,$extra,$addGuests='',$notes=false)
 	{
 		global $dbConn, $pdfConfirmFile;
 		if (!isset($dbConn)) $dbConn = new database();
@@ -201,8 +203,6 @@ class reservation {
 		//	$this->error = 'addGuests';
 
 		if ($this->error) return false;
-
-		return false;
 
 		if ($spaces>25 && $customer['auth']<4) {
 			$this->error = 'groupSize';
@@ -329,7 +329,6 @@ class reservation {
 				$qVars['frs']			= $frs;
 				$qVars['KFS_SUB_ACCOUNT_FK'] = $KFS_SUB_ACCOUNT_FK;
 				$qVars['KFS_SUB_OBJECT_CODE_FK'] = $KFS_SUB_OBJECT_CODE_FK;
-
 				$conf = $dbConn->sSeqInsert($query, "PARKING.GR_RESERVATION_ID", $qVars);
 				$wasInserted = "query: $query"."
 						qvars:

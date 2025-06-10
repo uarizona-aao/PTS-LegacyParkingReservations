@@ -82,9 +82,15 @@ class CreateCustomerViewAction extends CustomerAction
 
             $_SESSION['resConfirmed'] = 1;
             // Create reservations and send confimration emails.
-            $res->newRes($_POST['frs'], $_POST['KFS_SUB_ACCOUNT_FK'], $_POST['KFS_SUB_OBJECT_CODE_FK'], $customer, $_POST['garage'], $dates, $_POST['enterTime'], $_POST['exitTime'], $_POST['groupGuest'], $option1, $option2, $comeGo, isChecked("allowExtra","1","0"), $_POST[$addGuests]);
-            var_dump($res);exit;
+            $res->newRes($_POST['frs'], $_POST['KFS_SUB_ACCOUNT_FK'], $_POST['KFS_SUB_OBJECT_CODE_FK'], $customer, $_POST['garage'], 
+                $dates, $_POST['enterTime'], $_POST['exitTime'], $_POST['groupGuest'], 
+                $option1, $option2, $comeGo, isChecked("allowExtra","1","0"), $_POST[$addGuests] ?? '');
             $_SESSION['resConfirmed'] = 0;
+
+
+            print "<pre>";
+            var_dump($res);
+            exit;
 
             if ($res->error) {
                 // TODO this creates an error and redirects back to the original form
