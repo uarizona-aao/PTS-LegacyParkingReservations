@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Middleware\SessionMiddleware;
 use App\Application\Middleware\WebauthMiddleware;
+use App\Application\Middleware\DevCorsMiddleware;
 use Slim\App;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
@@ -20,4 +21,7 @@ return function (App $app) {
     // Add the rest
     $app->add(WebauthMiddleware::class);
     $app->add(SessionMiddleware::class);
+    if($_ENV['APP_ENV'] === "development") {
+        $app->add(DevCorsMiddleware::class);
+    }
 };

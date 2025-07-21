@@ -136,8 +136,23 @@ class reservation {
 
 
 
-	function newRes ($frs,$KFS_SUB_ACCOUNT_FK,$KFS_SUB_OBJECT_CODE_FK,$customer,$garageid,$dates,$stime,$etime,$gg,$option1,$option2,$comeGo,$extra,$addGuests='',$notes=false)
-	{
+	function newRes (
+		string $frs,
+		string $KFS_SUB_ACCOUNT_FK,
+		string $KFS_SUB_OBJECT_CODE_FK,
+		array $customer,
+		int $garageid,
+		array $dates,
+		string $stime,
+		string $etime,
+		string $gg, // 'group' or 'guest'
+		mixed $option1,
+		int $option2,
+		string $comeGo,
+		int $extra,
+		string $addGuests = '',
+		bool $dry = false
+	) {
 		global $dbConn, $pdfConfirmFile;
 		if (!isset($dbConn)) $dbConn = new database();
 
@@ -331,7 +346,11 @@ class reservation {
 				$qVars['frs']			= $frs;
 				$qVars['KFS_SUB_ACCOUNT_FK'] = $KFS_SUB_ACCOUNT_FK;
 				$qVars['KFS_SUB_OBJECT_CODE_FK'] = $KFS_SUB_OBJECT_CODE_FK;
-				$conf = $dbConn->sSeqInsert($query, "PARKING.GR_RESERVATION_ID", $qVars);
+				if(!$dry) {
+					$conf = $dbConn->sSeqInsert($query, "PARKING.GR_RESERVATION_ID", $qVars);
+				} else {
+					$conf = 888; // A fake id for dry run
+				}
 				$wasInserted = "query: $query"."
 						qvars:
 						'stime' => '01/01/2005 ' . $stime,
@@ -446,15 +465,8 @@ class reservation {
 					if ($garageTxt=="Second Street Garage") {
 						$msg3 .= "Please share the following instructions with your guest: \n https://parking.arizona.edu/pdf/garage-instructions.pdf  \n\n ";
 					}
-				//	$msg3 .= "$garageLinkTxt1";
-					
 					
 					$msg3 .= "Visitor Programs\nUA Parking & Transportation Services\n1117 E. Sixth Street\nTucson, AZ 85721-0181\n(520) 621-3710\n";
-					/*$dbConn->query("SELECT RESERVATION_ID FROM PARKING.GR_RESERVATION INNER JOIN PARKING.GR_GUEST ON RESERVATION_ID=RESERVATION_ID_FK WHERE RESERVATION_ID IN (".implode(",",$this->resid).")");
-					if (!$dbConn->rows || $dbConn->rows!=count($this->resid)) {
-						$this->error = 'db';
-						return false;
-					}else*/
 
 					if ($makePDF) {
 
@@ -551,11 +563,11 @@ class reservation {
 
 
 		        $from = "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n";
-   $recipient="jennyb@arizona.edu,staceyg@arizona.edu";
-									$recipient=$notifcationRecipiants;
-   $subject=$garageTxt.' New Garage Reservation';
-   $text=$msg3;
-   $result=mail($recipient, $subject, $msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
+				$recipient="staceyg@arizona.edu";
+				$recipient=$notifcationRecipiants;
+				$subject=$garageTxt.' New Garage Reservation';
+				$text=$msg3;
+				$result=mail($recipient, $subject, $msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
 		} else {
 			$wasEmailed = $this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "", "PTS-IT-Emails@email.arizona.edu");
 			// mail($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
