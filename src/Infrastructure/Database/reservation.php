@@ -504,10 +504,7 @@ class reservation {
 						$pdf->saveState();
 						$pdf->setColor(0.9,0.9,0.9);
 						file_put_contents($_SERVER['DOCUMENT_ROOT']."/parking/garage-reservation/resPDF/$pdfConfirmFile", $pdf->ezOutput());
-					} else {
-			
-						
-					}
+					} 
 				}
 
 				elseif ($i>0) {
@@ -520,45 +517,47 @@ class reservation {
 						$noteUsed = array();
 					if (!in_array($conf,$noteUsed)) {
 						$noteUsed[] = $conf;
-						$this->resNote($conf, $customer["userid"], $note);
+						if(!$dry) {
+							$this->resNote($conf, $customer["userid"], $note);
+						} else {
+							// dry run; no notes
+						}
 					}
-					if ($gg=="guest") $this->addGuest($conf,$option1,1,0,0,true);
-					else $this->addGuest($conf,$option1,$option2,0,0,true);
+					if(!$dry) {
+						if ($gg=="guest") $this->addGuest($conf,$option1,1,0,0,true);
+						else $this->addGuest($conf,$option1,$option2,0,0,true);
+					}
 				}
 			}
 			else {
 				return false;
 			}
 		}
-		if (isset($_SESSION['cuinfo']['email'])) {
-			
-			
-								if ($garageTxt=="South Stadium Garage" || $garageTxt=="Highland Avenue Garage" ) {
-
-
-									$gLocation=($garageTxt=="South Stadium Garage")? "STA" : "HND" ;
-									require_once('/var/www2/include/flowbird-include/reservationcontroller.php');
-									$numberOfTickets=count($dates)*$this->groupCount;
-									$rc=new ReservationController();
-									$kfsInformation=$rc->getKFSInformation($frs);
-									$package=new \stdClass();
-									$package->FBTICKETVALUE=9;
-									$package->FBTICKETTYPE='SINGLE';
-									$package->FBTICKETLOCATION=$gLocation;
-									$package->FBNUMBEROFTICKETS=$numberOfTickets;
-									$package->TOTALORDERCOST=$numberOfTickets*9;
-									$package->CUSTOMERNAME= $_SESSION['eds_data']['sn'] . ', ' . $_SESSION['eds_data']['givenname'];
-									$package->CUSTOMEREMAIL=$_SESSION['eds_data']['mail'];
-									$package->CUSTOMERPHONE=$_SESSION['eds_data']['employeephone'];
-									$package->KFSNUMBER=$frs;
-									$package->DEPARTMENTNAME=$kfsInformation->DEPARTMENTNAME;
-									$package->RESERVATIONDATE=$dates[0];
-									$package->RESERVATIONVISITORCOUNT=$this->groupCount;
-									$package->RESERVATIONNUMBER=$justConNums;
-									$package->RESERVATIONDATES=implode(", ",$dates);
-// echo var_dump($package);
-// exit;
-								$notifcationRecipiants=$rc->processFlowbirdReservation($package);
+		if (isset($_SESSION['cuinfo']['email'])) {	
+			if ($garageTxt=="South Stadium Garage" || $garageTxt=="Highland Avenue Garage" ) {
+				$gLocation=($garageTxt=="South Stadium Garage")? "STA" : "HND" ;
+				require_once('/var/www2/include/flowbird-include/reservationcontroller.php');
+				$numberOfTickets=count($dates)*$this->groupCount;
+				$rc=new ReservationController();
+				$kfsInformation=$rc->getKFSInformation($frs);
+				$package=new \stdClass();
+				$package->FBTICKETVALUE=9;
+				$package->FBTICKETTYPE='SINGLE';
+				$package->FBTICKETLOCATION=$gLocation;
+				$package->FBNUMBEROFTICKETS=$numberOfTickets;
+				$package->TOTALORDERCOST=$numberOfTickets*9;
+				$package->CUSTOMERNAME= $_SESSION['eds_data']['sn'] . ', ' . $_SESSION['eds_data']['givenname'];
+				$package->CUSTOMEREMAIL=$_SESSION['eds_data']['mail'];
+				$package->CUSTOMERPHONE=$_SESSION['eds_data']['employeephone'];
+				$package->KFSNUMBER=$frs;
+				$package->DEPARTMENTNAME=$kfsInformation->DEPARTMENTNAME;
+				$package->RESERVATIONDATE=$dates[0];
+				$package->RESERVATIONVISITORCOUNT=$this->groupCount;
+				$package->RESERVATIONNUMBER=$justConNums;
+				$package->RESERVATIONDATES=implode(", ",$dates);
+	// echo var_dump($package);
+	// exit;
+			$notifcationRecipiants=$rc->processFlowbirdReservation($package);
 
 
 

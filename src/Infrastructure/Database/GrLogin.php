@@ -106,7 +106,7 @@ class GrLogin
 		/***
 		 * sets the session variable from the object's information.
 		 */
-
+		error_log("Setting cuinfo session variable");
 		$_SESSION['cuinfo'] = $this->cuinfo;
 
 		/* Similar to database .php which has:

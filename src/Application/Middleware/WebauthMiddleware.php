@@ -103,7 +103,6 @@ class WebauthMiddleware implements Middleware
 			$xmlp = xml_parser_create();
 			xml_parse_into_struct($xmlp, $xml, $ticketResponse, $index);
 			xml_parser_free($xmlp);
-
             if ($ticketResponse[$index['CAS:USER'][0]]['value'] && !isset($index['CAS:AUTHENTICATIONFAILURE']))
 			{
 				$_SESSION['webauth_data']['netid'] = $ticketResponse[$index['CAS:USER'][0]]['value'];
