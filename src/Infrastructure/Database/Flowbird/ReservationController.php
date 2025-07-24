@@ -18,7 +18,7 @@ class ReservationController
  {
      $this->rm = new FloworderModel();
  }
-    public function processFlowbirdReservation($package) {
+    public function processFlowbirdReservation($package, $dry=false) {
         $set=new FlowsettingsModel();
         $this->settings=$set->getSettings();
         $returnParams=new \stdClass();
@@ -40,12 +40,21 @@ class ReservationController
 
                 $returnParams->orderSuccessful=true;
                 $returnParams->ticketsAvalable=$package->FBNUMBEROFTICKETS;
-
-                $package->orderId=$this->rm->createReservationOrder($package);
-                $package->codes=$this->rm->reserveTicketCodes($package);
-                $mailResponse=$this->sendReservationOrder($package->orderId);
-                $response->status="success";
-                 $codesLeft=$availableTickets-$package->FBNUMBEROFTICKETS;
+                if(!$dry) {
+                    $package->orderId=$this->rm->createReservationOrder($package);
+                    $package->codes=$this->rm->reserveTicketCodes($package);
+                    $mailResponse=$this->sendReservationOrder($package->orderId);
+                    $response->status="success";
+                } else {
+                    $package->orderId=0;
+                    $package->codes=[ 
+                        (object) ['FBTICKETCODE' => 'ABC123', 'status' => 'reserved'],
+                        (object) ['FBTICKETCODE' => 'DEF456', 'status' => 'reserved'],
+                        (object) ['FBTICKETCODE' => 'GHI789', 'status' => 'reserved'],
+                    ];
+                    $response->status="success";
+                }
+                $codesLeft=$availableTickets-$package->FBNUMBEROFTICKETS;
             if ($codesLeft<=$this->settings->INVENTORYLOWTHRESHOLD) {
                 $package->REMAININGAVAILALBECODES=$codesLeft;
                 $package->TOEMAIL=$this->settings->INVENTORYALERTEMAIL;

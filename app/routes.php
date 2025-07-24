@@ -38,7 +38,6 @@ return function (App $app) {
     // api route
     $app->post('/new_res', function (Request $request, Response $response) {
         // return a hello world response until i can hook in the reservation class.
-        
         $reservation = new reservation();
         $postData = $request->getParsedBody();
 
@@ -101,8 +100,8 @@ return function (App $app) {
             $data['customer'] ?? [],
             $data['garage'] ?? 0,
             $data['dates'] ?? [],
-            $data['stime'] ?? '',
-            $data['etime'] ?? '',
+            $data['start_time'] ?? '',
+            $data['end_time'] ?? '',
             $data['group_guests'] ?? '',
             $data['option1'] ?? '',
             $data['option2'] ?? 0,
@@ -122,7 +121,7 @@ return function (App $app) {
         // // var_dump($result);
         // // var_dump($reservation);
 
-        $response->getBody()->write($reservation->phone);
+        $response->getBody()->write($reservation->error);
         return $response;
     });
 };

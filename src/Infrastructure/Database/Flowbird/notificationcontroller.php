@@ -1,5 +1,7 @@
 <?php
 namespace App\Infrastructure\Database\Flowbird;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 /*
  * fNotificationController - assemble order and ticket email notifications
  * Version 1.0.
@@ -29,13 +31,16 @@ class NotificationController
     protected function sendEmailWithCC($fromName, $fromEmail, $cc, $toEmail, $text, $subject)
     {
         $from = "From: " . $fromName . " <" . $fromEmail . ">\r\nCc: " . $cc . "\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=ISO-8859-1\r\n";
-        mail($toEmail, $subject, $text, $from);
+        // mail($toEmail, $subject, $text, $from);
+        $this->send_email($toEmail, $subject, $text, $fromEmail, $cc);
     }
 
     public function sendEmail($fromName, $fromEmail, $toEmail, $text, $subject)
     {
         $from = "From: " . $fromName . " <" . $fromEmail . ">\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=ISO-8859-1\r\n";
-        mail($toEmail, $subject, $text, $from);
+        // mail($toEmail, $subject, $text, $from);
+        $this->send_email($toEmail, $subject, $text, $fromEmail);
+
     }
 
     // private function sendCodeEmail($customer, $stats)
@@ -52,7 +57,7 @@ class NotificationController
         $notInfo = new \stdClass();
         $notInfo->subject = "Flowbird Order Receipt: Validations Codes Included";
         $notInfo->toEmail =  $package->CUSTOMEREMAIL;
-        $notInfo->fromEmail ='PTS-Information@email.arizona.edu';
+        $notInfo->fromEmail ='PTS-Information@arizona.edu';
         $notInfo->fromName='UofA Parking & Transportation';
        // $notInfo->cc ="";
         $codeTable=$this->tablelizePasscodes($package->ticketCodes);
@@ -98,7 +103,7 @@ class NotificationController
         $notInfo = new \stdClass();
         $notInfo->subject = "Garage Reservation Receipt: Validations Codes Included";
         $notInfo->toEmail =  $package->CUSTOMEREMAIL;
-        $notInfo->fromEmail ='PTS-Information@email.arizona.edu';
+        $notInfo->fromEmail ='PTS-Information@arizona.edu';
         $notInfo->fromName='UofA Parking & Transportation';
         // $notInfo->cc ="";
         $codeTable=$this->tablelizePasscodes($package->ticketCodes);
@@ -145,7 +150,7 @@ class NotificationController
         $notInfo = new \stdClass();
         $notInfo->subject = "FlowBird Low Inventory ALERT";
         $notInfo->toEmail =  $package->TOEMAIL;
-        $notInfo->fromEmail ='PTS-Information@email.arizona.edu';
+        $notInfo->fromEmail ='PTS-Information@arizona.edu';
         $notInfo->fromName='UofA Parking & Transportation';
         // $notInfo->cc ="";
         $codeTable=$this->tablelizePasscodes($package->ticketCodes);
@@ -242,5 +247,48 @@ The University of Arizona<br>
         $codeHTML.="</table>";
         return $codeHTML;
     }
+
+	function send_email($recipient, $subject, $message, $from = '', $bcc = '') {
+		$mail = new PHPMailer(true);
+
+		// Load env if not already loaded (way up in root)
+		$dotenv = \Dotenv\Dotenv::createImmutable(__DIR__.'/../../../../');
+		$dotenv->load();
+		try {
+			// Server settings
+			$mail->isSMTP();
+			$mail->Host = $_ENV['MAIL_HOST']; // Set the SMTP server to send through
+			$mail->SMTPAuth = true;
+			$mail->Username = $_ENV['MAIL_USERNAME']; // SMTP username
+			$mail->Password = $_ENV['MAIL_PASSWORD']; // SMTP password
+			$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+			$mail->Port = 587;
+			// Recipients
+			if ($from != '') {
+				$mail->setFrom($from); // Set custom from address if provided
+			} else {
+				// Default from address
+				$mail->setFrom('baas-aws-ses@arizona.edu', 'PTS Visitor Programs');
+			}
+			$mail->addAddress($recipient); // Add recipient email
+			if($bcc != '') {
+				$mail->addBCC($bcc); // Add BCC if provided
+			}
+
+			// Content
+			$mail->isHTML(true);
+			$mail->Subject = $subject;
+			$mail->Body = $message;
+
+			$mail->send();
+			$wasEmailed = true;
+		} catch (Exception $e) {
+			$wasEmailed = false;
+			error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
+			echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
+		}
+
+		return $wasEmailed;
+	}
 
 }

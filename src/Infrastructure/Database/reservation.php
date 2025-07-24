@@ -1,8 +1,11 @@
 <?php
 namespace App\Infrastructure\Database;
 use App\Application\ResponseEmitter\PDF\Cezpdf;
+use App\Infrastructure\Database\Flowbird\ReservationController;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+
+include_once dirname(__DIR__, 2) . '/form_functions.php';
 
 class reservation {
 
@@ -124,12 +127,12 @@ class reservation {
 
 		// enter time check
 		$timeCheck = "/[0-9]{1,2}\:[0-9]{2} am|AM|pm|PM/";
-		if (!preg_match($timeCheck,$stime)) return 'notTime';
+		if (!preg_match($timeCheck,$stime)) return 'notTimeEnter';
 		if (strpos($stime,':')==1)
 			$this->resenter = "0".$stime;
 
 		// exit time check
-		if (!preg_match($timeCheck,$etime)) return 'notTime';
+		if (!preg_match($timeCheck,$etime)) return 'notTimeExit';
 		if (strpos($etime,':')==1)
 			$this->resexit = "0".$etime;
 	}
@@ -141,7 +144,7 @@ class reservation {
 		string $KFS_SUB_ACCOUNT_FK,
 		string $KFS_SUB_OBJECT_CODE_FK,
 		array $customer,
-		int $garageid,
+		int|string $garageid,
 		array $dates,
 		string $stime,
 		string $etime,
@@ -149,9 +152,9 @@ class reservation {
 		mixed $option1,
 		int $option2,
 		string $comeGo,
-		int $extra,
+		int|string $extra,
 		string $addGuests = '',
-		bool $dry = false
+		bool|string $dry = false
 	) {
 		global $dbConn, $pdfConfirmFile;
 		if (!isset($dbConn)) $dbConn = new database();
@@ -480,12 +483,12 @@ class reservation {
 						// Just make some random-ish pdf file name so that it will be hard to find it.
 						$pdfConfirmFile = $this->resid[0] . '_' . ($this->resid[0] * 13 + 846756) . '.pdf';
 
-						$msg2 = "You can print your [PDF] confirmation here: \nhttps://parking.arizona.edu/parking/garage-reservation/resPDF/$pdfConfirmFile\n\n";
+						$msg2 = "You can print your [PDF] confirmation here: \nhttps://apps.ba.arizona.edu/garage-reservation/resPDF/$pdfConfirmFile\n\n";
 
-						require('/var/www2/include/pdf/class.ezpdf.php');
+						// require('/var/www2/include/pdf/class.ezpdf.php');
 
 						$pdf = new Cezpdf();
-						$pdf->selectFont('/var/www2/include/pdf/fonts/Helvetica.afm');
+						$pdf->selectFont('../../Fonts/Helvetica.afm');
 						$pdf->ezText($garageTxt, 21, array("right"=>150, "justification"=>"center"));
 						$pdf->ezText($garageLinkTxt2, 14, array("right"=>150, "justification"=>"center"));
 						$pdf->ezText("\nDepartment: $deptNameTmp", 16, array("right"=>150));
@@ -503,7 +506,13 @@ class reservation {
 						$pdf->selectFont('/var/www2/include/pdf/fonts/Times-BoldItalic.afm');
 						$pdf->saveState();
 						$pdf->setColor(0.9,0.9,0.9);
-						file_put_contents($_SERVER['DOCUMENT_ROOT']."/parking/garage-reservation/resPDF/$pdfConfirmFile", $pdf->ezOutput());
+
+						// Dynamically determine the public folder path
+						$publicPath = realpath(__DIR__ . '/../../../../public/resPDF');
+						if (!file_exists($publicPath)) {
+							mkdir($publicPath, 0777, true); // Create the folder if it doesn't exist
+						}
+						file_put_contents("$publicPath/$pdfConfirmFile", $pdf->ezOutput());
 					} 
 				}
 
@@ -536,7 +545,6 @@ class reservation {
 		if (isset($_SESSION['cuinfo']['email'])) {	
 			if ($garageTxt=="South Stadium Garage" || $garageTxt=="Highland Avenue Garage" ) {
 				$gLocation=($garageTxt=="South Stadium Garage")? "STA" : "HND" ;
-				require_once('/var/www2/include/flowbird-include/reservationcontroller.php');
 				$numberOfTickets=count($dates)*$this->groupCount;
 				$rc=new ReservationController();
 				$kfsInformation=$rc->getKFSInformation($frs);
@@ -548,7 +556,7 @@ class reservation {
 				$package->TOTALORDERCOST=$numberOfTickets*9;
 				$package->CUSTOMERNAME= $_SESSION['eds_data']['sn'] . ', ' . $_SESSION['eds_data']['givenname'];
 				$package->CUSTOMEREMAIL=$_SESSION['eds_data']['mail'];
-				$package->CUSTOMERPHONE=$_SESSION['eds_data']['employeephone'];
+				$package->CUSTOMERPHONE = isset($_SESSION['eds_data']['employeephone']) ? $_SESSION['eds_data']['employeephone'] : '(999) 999-9999';
 				$package->KFSNUMBER=$frs;
 				$package->DEPARTMENTNAME=$kfsInformation->DEPARTMENTNAME;
 				$package->RESERVATIONDATE=$dates[0];
@@ -557,16 +565,16 @@ class reservation {
 				$package->RESERVATIONDATES=implode(", ",$dates);
 	// echo var_dump($package);
 	// exit;
-			$notifcationRecipiants=$rc->processFlowbirdReservation($package);
+			$notifcationRecipiants = $rc->processFlowbirdReservation($package, $dry);
 
+			$recipient = "staceyg@arizona.edu";
+			$recipient = $notifcationRecipiants;
+			$subject = $garageTxt . ' New Garage Reservation';
+			$text = $msg3;
+			$from = "PTS-ParkingReservations@arizona.edu";
+			$bcc = "PTS-IT-Emails@email.arizona.edu";
 
-
-		        $from = "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n";
-				$recipient="staceyg@arizona.edu";
-				$recipient=$notifcationRecipiants;
-				$subject=$garageTxt.' New Garage Reservation';
-				$text=$msg3;
-				$result=mail($recipient, $subject, $msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
+			$wasEmailed = $this->send_email($recipient, $subject, $text, $from, $bcc);
 		} else {
 			$wasEmailed = $this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "", "PTS-IT-Emails@email.arizona.edu");
 			// mail($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
@@ -584,6 +592,8 @@ class reservation {
 		} else {
 			$wasEmailed = false;
 		}
+
+		var_dump($wasEmailed);exit;
 
 		if ($wasInserted && !$wasEmailed) {
 			$msg_err = '~~~~~~~~~~~~~~ CUST EMAIL: ' . $_SESSION['cuinfo']['email'] . "\n\n";
@@ -1132,6 +1142,8 @@ class reservation {
 			"weekend"=>"The date you selected falls on a day when the garages are open (campus holiday or weekend day). Reservations are not necessary on these dates.",
 			'notDate'=>'The date you selected is not a valid date. Please format all dates as MM/DD/YYYY (e.g. - 01/01/2005). Please check the information and try again.',
 			'notTime'=>'The time you entered for this reservation is invalid. Please format all times HH:MI AM (e.g. - 08:00 AM). Please check the information and try again.',
+			'notTimeEntry'=>'The time you entered for this reservation entry is invalid. Please format all times HH:MI AM (e.g. - 08:00 AM). Please check the information and try again.',
+			'notTimeExit'=>'The time you entered for this reservation exit is invalid. Please format all times HH:MI AM (e.g. - 08:00 AM). Please check the information and try again.',
 			'noDates'=>'No dates were selected in the reservation. Please check the information and try again.',
 			'addGuests'=>'Please enter a number for Additional Guests in the space provided',
 			'noGuests'=>'No guests were entered. Please try again.',
