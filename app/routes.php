@@ -108,7 +108,6 @@ return function (App $app) {
             $data['come_go'] ?? '0',
             $data['extra'] ?? 0,
             $data['add_guests'] ?? '',
-            $data['notes'] ?? false,
             $data['dry'] ?? false
         );
 

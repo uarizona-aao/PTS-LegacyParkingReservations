@@ -1,7 +1,7 @@
 <?php
 namespace App\Infrastructure\Database;
-use App\Application\ResponseEmitter\PDF\Cezpdf;
 use App\Infrastructure\Database\Flowbird\ReservationController;
+use TCPDF;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -175,7 +175,6 @@ class reservation {
 			$this->error = 'subObjInvalid';
 			return false;
 		}
-
 		// error check
 		if ($dates && !is_array($dates))
 			$dates = array($dates);
@@ -428,7 +427,7 @@ class reservation {
 						// Use 'Phoenix BioMedical Campus' because don't want "Phoenix BioMedical 10003"
 						$garageTxt = 'Phoenix BioMedical Campus ' . $pbc_lot_loc;
 						$garageLinkTxt1 = "To view a map of Phoenix BioMedical parking lots, please visit our web site:\nhttps://parking.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
-						$garageLinkTxt2 =         "parking.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf";
+						$garageLinkTxt2 =         "apps.ba.arizona.edu/garage-reservation/images/maps/phoenixmedicalcenterlot.pdf";
 					}
 
 					$note = "Created";
@@ -462,11 +461,11 @@ class reservation {
 					$msg3 .= "$confNums\n\n";
 					$msg3 .= "$garageLinkTxt1";
 						if ($garageTxt!=="South Stadium Garage" && $garageTxt!=="Highland Avenue Garage" && $garageTxt!=="Second Street Garage") {
-							$msg3 .= "Please share the following instructions with your guest: \n https://parking.arizona.edu/pdf/garage-instructions.pdf \n\n";
+							$msg3 .= "Please share the following instructions with your guest: \n https://apps.ba.arizona.edu/garage-reservation/pdf/garage-instructions.pdf \n\n";
 						}
 					
 					if ($garageTxt=="Second Street Garage") {
-						$msg3 .= "Please share the following instructions with your guest: \n https://parking.arizona.edu/pdf/garage-instructions.pdf  \n\n ";
+						$msg3 .= "Please share the following instructions with your guest: \n https://apps.ba.arizona.edu/garage-reservation/pdf/garage-instructions.pdf  \n\n ";
 					}
 					
 					$msg3 .= "Visitor Programs\nUA Parking & Transportation Services\n1117 E. Sixth Street\nTucson, AZ 85721-0181\n(520) 621-3710\n";
@@ -483,36 +482,55 @@ class reservation {
 						// Just make some random-ish pdf file name so that it will be hard to find it.
 						$pdfConfirmFile = $this->resid[0] . '_' . ($this->resid[0] * 13 + 846756) . '.pdf';
 
-						$msg2 = "You can print your [PDF] confirmation here: \nhttps://apps.ba.arizona.edu/garage-reservation/resPDF/$pdfConfirmFile\n\n";
-
-						// require('/var/www2/include/pdf/class.ezpdf.php');
-
-						$pdf = new Cezpdf();
-						$pdf->selectFont('../../Fonts/Helvetica.afm');
-						$pdf->ezText($garageTxt, 21, array("right"=>150, "justification"=>"center"));
-						$pdf->ezText($garageLinkTxt2, 14, array("right"=>150, "justification"=>"center"));
-						$pdf->ezText("\nDepartment: $deptNameTmp", 16, array("right"=>150));
-						$pdf->ezText("\n$confNums", 20, array("right"=>150));
-						$pdf->ezText("\n$resDateTime", 20, array("right"=>150));
-						if (isset($resDateRecur))
-							$pdf->ezText("$resDateRecur", 18, array("right"=>150));
-						//$pdf->ezText("Spaces: $this->groupCount"."$recurAppend   Additional Guests: $addGuests", 18, array("right"=>150));
-						$pdf->ezText("Spaces: $this->groupCount"."$recurAppend", 18, array("right"=>150));
-						$pdf->ezText("\n\n\n\n\n\nPlace on driver side dashboard of vehicle, without obstruction", 12, array("justification"=>"center"));
-						$pdf->ezText("\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \n", 10, array("justification"=>"center"));
-						//$pdf->ezText("\n\n\nBusiness Office\nParking & Transportation Services \n1117 E. Sixth Street \nPO Box 210181 \nTucson, AZ 85721-0181 \nPH: (520) 621-6912\n", 10);
-						$pdf->addPngFromFile($_SERVER['DOCUMENT_ROOT'].'/parking/garage-reservation/administrator/pts_logo.png', 460, 735, 120);
-						$pdf->addPngFromFile($_SERVER['DOCUMENT_ROOT'].'/parking/garage-reservation/administrator/ptsAddress.png', 450, 615, 130);
-						$pdf->selectFont('/var/www2/include/pdf/fonts/Times-BoldItalic.afm');
-						$pdf->saveState();
-						$pdf->setColor(0.9,0.9,0.9);
-
-						// Dynamically determine the public folder path
-						$publicPath = realpath(__DIR__ . '/../../../../public/resPDF');
+						// Path to save the PDF
+						$publicPath = realpath(__DIR__ . '/../../../public/resPDF');
 						if (!file_exists($publicPath)) {
 							mkdir($publicPath, 0777, true); // Create the folder if it doesn't exist
 						}
-						file_put_contents("$publicPath/$pdfConfirmFile", $pdf->ezOutput());
+
+						// Path to images
+						$imagesPath = realpath(__DIR__ . '/../../../public/images');
+
+						// Initialize TCPDF
+						$pdf = new TCPDF();
+						$pdf->SetCreator(PDF_CREATOR);
+						$pdf->SetAuthor('PTS Visitor Programs');
+						$pdf->SetTitle('Garage Reservation Confirmation');
+						$pdf->SetSubject('Reservation Confirmation');
+						$pdf->SetMargins(15, 15, 15);
+						$pdf->SetAutoPageBreak(true, 15);
+						$pdf->AddPage();
+
+						// Add content to the PDF
+						$pdf->SetFont('helvetica', '', 12);
+						$pdf->Cell(0, 10, $garageTxt, 0, 1, 'C');
+						$pdf->Ln(5);
+						$pdf->Cell(0, 10, $garageLinkTxt2, 0, 1, 'C');
+						$pdf->Ln(10);
+						$pdf->MultiCell(0, 10, "Department: $deptNameTmp", 0, 'L');
+						$pdf->Ln(5);
+						$pdf->MultiCell(0, 10, $confNums, 0, 'L');
+						$pdf->Ln(5);
+						$pdf->MultiCell(0, 10, $resDateTime, 0, 'L');
+						if (isset($resDateRecur)) {
+							$pdf->Ln(5);
+							$pdf->MultiCell(0, 10, $resDateRecur, 0, 'L');
+						}
+						$pdf->Ln(5);
+						$pdf->MultiCell(0, 10, "Spaces: $this->groupCount" . "$recurAppend", 0, 'L');
+						$pdf->Ln(10);
+						$pdf->MultiCell(0, 10, "Place on driver side dashboard of vehicle, without obstruction", 0, 'C');
+						$pdf->Ln(10);
+
+						// Add images
+						$pdf->Image("$imagesPath/pts_logo.png", 15, 250, 50); // Adjust position and size as needed
+						$pdf->Image("$imagesPath/ptsAddress.png", 15, 270, 50);
+
+						// Save the PDF to the public directory
+						$pdf->Output("$publicPath/$pdfConfirmFile", 'F');
+
+						// Add the PDF link to the email message
+						$msg2 = "You can print your [PDF] confirmation here: \nhttps://apps.ba.arizona.edu/garage-reservation/resPDF/$pdfConfirmFile\n\n";
 					} 
 				}
 
@@ -565,30 +583,21 @@ class reservation {
 				$package->RESERVATIONDATES=implode(", ",$dates);
 	// echo var_dump($package);
 	// exit;
-			$notifcationRecipiants = $rc->processFlowbirdReservation($package, $dry);
+				$notifcationRecipiants = $rc->processFlowbirdReservation($package, $dry);
 
-			$recipient = "staceyg@arizona.edu";
-			$recipient = $notifcationRecipiants;
-			$subject = $garageTxt . ' New Garage Reservation';
-			$text = $msg3;
-			$from = "PTS-ParkingReservations@arizona.edu";
-			$bcc = "PTS-IT-Emails@email.arizona.edu";
+				$recipient = "staceyg@arizona.edu";
+				$recipient = $notifcationRecipiants;
+				$subject = $garageTxt . ' New Garage Reservation';
+				$text = $msg3;
+				$from = "PTS-ParkingReservations@arizona.edu";
+				$bcc = "PTS-IT-Emails@email.arizona.edu";
 
-			$wasEmailed = $this->send_email($recipient, $subject, $text, $from, $bcc);
-		} else {
-			$wasEmailed = $this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "", "PTS-IT-Emails@email.arizona.edu");
-			// mail($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
-			//mail('jbrabec@email.arizona.edu', 'Garage Reservation conf 2', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\n");			
-		}
-			
-			
-
-			
-			
-			
-			
-			
-			
+				$wasEmailed = $this->send_email($recipient, $subject, $text, $from, $bcc);
+			} else {
+				$wasEmailed = $this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "", "PTS-IT-Emails@email.arizona.edu");
+				// mail($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
+				//mail('jbrabec@email.arizona.edu', 'Garage Reservation conf 2', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\n");			
+			}	
 		} else {
 			$wasEmailed = false;
 		}
