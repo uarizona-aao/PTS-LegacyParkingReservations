@@ -83,53 +83,53 @@ class CreateCustomerViewAction extends CustomerAction
             $_SESSION['resConfirmed'] = 1;
 
             // Create reservations and send confimration emails.
-            $res->newRes(
-                $_POST['frs'], 
-                $_POST['KFS_SUB_ACCOUNT_FK'], 
-                $_POST['KFS_SUB_OBJECT_CODE_FK'], 
-                $customer, 
-                $_POST['garage'], 
-                $dates, 
-                $_POST['enterTime'], 
-                $_POST['exitTime'], 
-                $_POST['groupGuest'], 
-                $option1, 
-                $option2, 
-                $comeGo, 
-                isChecked("allowExtra","1","0"), 
-                $_POST[$addGuests] ?? '',
-                true);
-            $_SESSION['resConfirmed'] = 0;
+                $x = $res->newRes(
+                    $_POST['frs'], 
+                    $_POST['KFS_SUB_ACCOUNT_FK'], 
+                    $_POST['KFS_SUB_OBJECT_CODE_FK'], 
+                    $customer, 
+                    $_POST['garage'], 
+                    $dates, 
+                    $_POST['enterTime'], 
+                    $_POST['exitTime'], 
+                    $_POST['groupGuest'], 
+                    $option1, 
+                    $option2, 
+                    $comeGo, 
+                    isChecked("allowExtra","1","0"), 
+                    $_POST[$addGuests] ?? ''); //,
+                    // true);
+                $_SESSION['resConfirmed'] = 0;
 
-            if ($res->error) {
-                return $this->customerResponder->create($this->response, [
-                    'error' => $res->errorOut($res->error, $res->errordate),
-                    'reservation' => $resInfo ?? [],
-                    'glg' => $glg ?? '',
-                    'cancelUri' => 'index.php'
-                ]);
-            }
-            elseif ($res->conf) {
-                // TODO redirect to 
-                // locationHref('/parking/garage-reservation/view.php?action=receipt&id='.$res->conf.'&pdfConfirmFile='.$pdfConfirmFile);
-                return $this->customerResponder->confirmation($this->response, [
-                    'reservation' => $res,
-                    'receipt' => true,
-                    'gg' => $_POST['groupGuest'] ?? 'guest',
-                    'pdfConfirmFile' => $pdfConfirmFile ?? null,
-                    'auth' => $customer['auth'],
-                    'can_edit' => true,
-                    'garage_text' => getGarageByID($_POST['garage']),
-                    'is_dry_run' => true, // Add this flag for dry runs
-                ]);
-            } else {
-                return $this->customerResponder->create($this->response, [
-                    'error' => $res->errorOut("noConf"),
-                    'reservation' => $resInfo ?? [],
-                    'glg' => $glg ?? '',
-                    'cancelUri' => 'index.php'
-                ]);
-            }
+                if ($res->error) {
+                    return $this->customerResponder->create($this->response, [
+                        'error' => $res->errorOut($res->error, $res->errordate),
+                        'reservation' => $resInfo ?? [],
+                        'glg' => $glg ?? '',
+                        'cancelUri' => 'index.php'
+                    ]);
+                }
+                elseif ($res->conf) {
+                    // TODO redirect to 
+                    // locationHref('/parking/garage-reservation/view.php?action=receipt&id='.$res->conf.'&pdfConfirmFile='.$pdfConfirmFile);
+                    return $this->customerResponder->confirmation($this->response, [
+                        'reservation' => $res,
+                        'receipt' => true,
+                        'gg' => $_POST['groupGuest'] ?? 'guest',
+                        'pdfConfirmFile' => $pdfConfirmFile ?? null,
+                        'auth' => $customer['auth'],
+                        'can_edit' => true,
+                        'garage_text' => getGarageByID($_POST['garage']),
+                    ]);
+                } else {
+                    return $this->customerResponder->create($this->response, [
+                        'error' => $res->errorOut("noConf"),
+                        'reservation' => $resInfo ?? [],
+                        'glg' => $glg ?? '',
+                        'cancelUri' => 'index.php'
+                    ]);
+                }
+
         // We submitted the initial resform and are doing checks...
         } elseif (isset($_POST['reserve']) || isset($_POST['reserve_x'])) {
 

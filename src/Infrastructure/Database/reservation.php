@@ -89,6 +89,7 @@ class reservation {
 	var $phone = "(520) 621-3710";
 
 	var $otherDates;
+	var $customer;
 
 
 	function __construct () {}
@@ -149,7 +150,7 @@ class reservation {
 		string $stime,
 		string $etime,
 		string $gg, // 'group' or 'guest'
-		mixed $option1,
+		mixed $option1, // arary if guest, string if group
 		mixed $option2,
 		string $comeGo,
 		int|string $extra,
@@ -160,6 +161,7 @@ class reservation {
 		if (!isset($dbConn)) $dbConn = new database();
 
 		$msg1 = $msg2 = $msg3 = '';
+		$note = null;
 		$wasInserted = false;
 
 		// frs validation check
@@ -227,7 +229,8 @@ class reservation {
 			$this->error = 'groupSize';
 			return false;
 		}
-
+		$garageTxt = $this->garageName = getGarageByID($garageid);
+		$this->customer = $customer;
 		// make sure there are no duplicate dates
 		$dates = array_unique($dates);
 
@@ -348,10 +351,16 @@ class reservation {
 				$qVars['frs']			= $frs;
 				$qVars['KFS_SUB_ACCOUNT_FK'] = $KFS_SUB_ACCOUNT_FK;
 				$qVars['KFS_SUB_OBJECT_CODE_FK'] = $KFS_SUB_OBJECT_CODE_FK;
+
 				if(!$dry) {
 					$conf = $dbConn->sSeqInsert($query, "PARKING.GR_RESERVATION_ID", $qVars);
 					$this->conf = $conf;
-					$this->getRes($conf, true);
+					$this->resenter = $stime;
+					$this->resexit = $etime;
+					$this->userName = $_SESSION['eds_data']['givenname'] . ' ' . $_SESSION['eds_data']['sn'];
+					$this->resdate = implode(', ', $dates); // Use user-submitted date(s) as a comma-separated string
+					$this->guestList = is_array($option1) ? implode(", ",$option1) : $option1;
+					$this->groupCount = $spaces;
 				} else {
 					$conf = 888; // A fake id for dry run
 					// Populate required properties for dry run
@@ -408,11 +417,7 @@ class reservation {
 					$this->errordate = $dates[$i];
 					return false;
 				}
-
 				if (!$this->conf && !$this->error) {
-					// This should be the very first loop ($i is 0). Generate .pdf if bio-med.
-					$this->conf = $conf;
-
 					// get res ids (they will always be sequential if multiple dates)
 					$this->resid = array($this->conf);
 					$resCount = count($dates)-1;
@@ -425,8 +430,6 @@ class reservation {
 					$this->frs = $frs;
 					$this->KFS_SUB_ACCOUNT_FK = $KFS_SUB_ACCOUNT_FK;
 					$this->KFS_SUB_OBJECT_CODE_FK = $KFS_SUB_OBJECT_CODE_FK;
-					// get garage name
-					$this->garageName = getGarageByID($garageid);
 					// get guest list or group name
 					if ($gg=='guest' && !$this->guestList) {
 						$option1 = array_unique($option1);
@@ -440,7 +443,6 @@ class reservation {
 					}
 
 					$garageLinkTxt1 = $garageLinkTxt2 = "";
-					$garageTxt = getGarageByID($garageid);
 					$makePDF = preg_match('/(BioMedical)/i', $garageTxt);
 					$pbc_lot_num2 = preg_match('/(10003)/i', $garageTxt) ? '10003' : '10002';
 					if ($pbc_lot_num2=='10003') {  // added br drw on 9/20/2017 so 10003 will not get pdf 
@@ -499,7 +501,6 @@ class reservation {
 					}
 					
 					$msg3 .= "Visitor Programs\nUA Parking & Transportation Services\n1117 E. Sixth Street\nTucson, AZ 85721-0181\n(520) 621-3710\n";
-
 					if ($makePDF) {
 
 						// Get department name.
@@ -563,7 +564,7 @@ class reservation {
 						$msg2 = "You can print your [PDF] confirmation here: \nhttps://apps.ba.arizona.edu/garage-reservation/resPDF/$pdfConfirmFile\n\n";
 					} 
 				}
-
+				
 				elseif ($i>0) {
 					$note = "Duplicated from $this->conf";
 				}
@@ -574,7 +575,7 @@ class reservation {
 						$noteUsed = array();
 					if (!in_array($conf,$noteUsed)) {
 						$noteUsed[] = $conf;
-						if(!$dry) {
+						if(!$dry && $note) {
 							$this->resNote($conf, $customer["userid"], $note);
 						} else {
 							// dry run; no notes
@@ -592,6 +593,7 @@ class reservation {
 		}
 		if (isset($_SESSION['cuinfo']['email'])) {	
 			if ($garageTxt=="South Stadium Garage" || $garageTxt=="Highland Avenue Garage" ) {
+				
 				$gLocation=($garageTxt=="South Stadium Garage")? "STA" : "HND" ;
 				$numberOfTickets=count($dates)*$this->groupCount;
 				$rc=new ReservationController();
@@ -611,8 +613,6 @@ class reservation {
 				$package->RESERVATIONVISITORCOUNT=$this->groupCount;
 				$package->RESERVATIONNUMBER=$justConNums;
 				$package->RESERVATIONDATES=implode(", ",$dates);
-	// echo var_dump($package);
-	// exit;
 				$notifcationRecipiants = $rc->processFlowbirdReservation($package, $dry);
 
 				$recipient = "staceyg@arizona.edu";
@@ -629,6 +629,12 @@ class reservation {
 				}
 			} else {
 				if(!$dry) {
+					$isValidationRequired = ($garageTxt == "South Stadium Garage" || 
+                           $garageTxt == "Highland Avenue Garage");
+					$messages = $this->generateEmailMessage($this->garageName, $dates, $stime, $etime, $pdfConfirmFile, $isValidationRequired);
+					$msg1 = $messages['msg1'];
+					$msg2 = $messages['msg2'];
+					$msg3 = $messages['msg3'];
 					$wasEmailed = $this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "", "PTS-IT-Emails@email.arizona.edu");
 				} else {
 					$wasEmailed = true;
@@ -664,7 +670,6 @@ class reservation {
 
 		// Safe Query!
 		$dbConn->query("SELECT R.*, TO_CHAR(RES_DATE,'MM/DD/YYYY') AS RESDATE, TO_CHAR(ENTER_TIME,'HH:MI AM') AS RESSTART, TO_CHAR(EXIT_TIME,'HH:MI AM') AS RESEND, GARAGE_NAME, D.DEPT_NAME, U.USER_NAME FROM PARKING.GR_RESERVATION R INNER JOIN PARKING.GR_DEPARTMENT D ON DEPT_NO_FK=DEPT_NO INNER JOIN PARKING.GR_USER U ON USER_ID_FK=USER_ID, PARKING.GR_GARAGE WHERE GARAGE_ID=GARAGE_ID_FK AND RESERVATION_ID=$resid");
-
 		if (!$dbConn->rows) return false;
 		elseif ($dbConn->rows!=1) return false;
 		else {
@@ -677,7 +682,6 @@ class reservation {
 			$this->garageName = $dbConn->results["GARAGE_NAME"][0];
 			$this->userName = $dbConn->results["USER_NAME"][0];
 			$this->active = $dbConn->results["ACTIVE"][0];
-
 			$this->getGuests($resid);
 
 
@@ -902,10 +906,10 @@ class reservation {
 
 
 	function addGuest ($resid,$guest,$size,$addon,$sizeChange=0,$new=false) {
-		global $dbConn,$customer;
 		if (!isset($dbConn)) $dbConn = new database();
 		if (!is_array($guest)) $guest = array($guest);
 		else $guest = array_values($guest);
+
 		if (count($guest) && $guest[0]) {
 			foreach ($guest as $g) {
 				if ($g) {
@@ -1174,7 +1178,7 @@ class reservation {
 
 	function errorOut ($error,$resdate='') {
 		$errors = array(
-			'duplicateGuests' => "There were duplicate names found: $this->guestList",
+			'duplicateGuests' => "There were duplicate names found. Check and try again.",
 			'db'=>"There has been a database error. Please try again. If the problem continues, please contact PTS Visitor Programs at $this->phone<br/>$this->errormsg",
 			'noConf'=>"No confirmation number was returned when making the reservation. The reservation has most likely failed due to a system error. Please contact PTS Visitor Programs at $this->phone during normal business hours to complete your reservation.",
 			'groupName'=>'Please enter a group name',
@@ -1240,11 +1244,129 @@ class reservation {
 			$wasEmailed = true;
 		} catch (Exception $e) {
 			$wasEmailed = false;
-			error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
 			echo "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
 		}
 
 		return $wasEmailed;
+	}
+
+	private function generateEmailMessage(
+		string $garageTxt,
+		array $dates,
+		string $stime,
+		string $etime,
+		?string $pdfConfirmFile = null,
+		bool $isValidationRequired = false
+	): array {
+		$msg1 = $msg2 = $msg3 = '';
+	
+		// Generate base confirmation message
+		$msg1 = "\nThis message is to confirm that your parking reservation has been placed.";
+		if ($isValidationRequired) {
+			$msg1 .= "\n *You will receive a separate email with validation codes.";
+		}
+		$msg1 .= "\n\n";
+	
+		// Generate PDF link if available
+		if ($pdfConfirmFile) {
+			$msg2 = "You can print your [PDF] confirmation here: \n";
+			$msg2 .= "https://apps.ba.arizona.edu/garage-reservation/resPDF/$pdfConfirmFile\n\n";
+		}
+	
+		// Generate reservation details
+		$msg3 = $this->generateReservationDetails(
+			$garageTxt,
+			$dates,
+			$stime,
+			$etime
+		);
+	
+		return [
+			'msg1' => $msg1,
+			'msg2' => $msg2,
+			'msg3' => $msg3
+		];
+	}
+	
+	private function generateReservationDetails(
+		string $garageTxt,
+		array $dates,
+		string $stime,
+		string $etime
+	): string {
+		$msg = '';
+	
+		// Space count and garage info
+		$msg .= "{$this->groupCount} space(s) will be reserved in the {$garageTxt}\n";
+	
+		// Reservation date/time
+		$resDateTime = "{$dates[0]} from {$stime} to {$etime}";
+		$msg .= "$resDateTime\n";
+	
+		// Handle recurring dates
+
+		if (count($dates) > 1) {
+			$datesEdit = $dates;
+			array_shift($datesEdit);
+			$resDateRecur = "Recurring on " . implode(', ', $datesEdit);
+			$msg .= "$resDateRecur.\n";
+		}
+	
+		// Guest/Group information
+		if (is_array($this->guestList)) {
+			$msg .= "Guest List/Group Name: " . implode(", ", $this->guestList) . "\n\n";
+		} else {
+			$msg .= "Guest List/Group Name: " . unmake_htmlentities($this->guestList) . "\n\n";
+		}
+
+		// Account information
+		$msg .= "This reservation will be billed to KFS account {$this->frs}.\n";
+		if (@$this->KFS_SUB_ACCOUNT_FK) {
+			$msg .= "    (KFS Sub Acct.:{$this->KFS_SUB_ACCOUNT_FK})\n";
+		}
+		if (@$this->KFS_SUB_OBJECT_CODE_FK) {
+			$msg .= "    (Sub Obj. Code:{$this->KFS_SUB_OBJECT_CODE_FK})\n";
+		}
+		$msg .= "\n";
+	
+		// Confirmation numbers
+		$justConNums = $this->conf;
+		$msg .= "Confirmation Number(s): $justConNums\n\n";
+	
+		// Garage specific instructions
+		$msg .= $this->getGarageSpecificInstructions($garageTxt);
+	
+		// Footer
+		$msg .= "Visitor Programs\n";
+		$msg .= "UA Parking & Transportation Services\n";
+		$msg .= "1117 E. Sixth Street\n";
+		$msg .= "Tucson, AZ 85721-0181\n";
+		$msg .= "(520) 621-3710\n";
+	
+		return $msg;
+	}
+	
+	private function getGarageSpecificInstructions(string $garageTxt): string {
+		$instructions = '';
+	
+		$garageMap = "https://apps.ba.arizona.edu/garage-reservation/pdf/garage-instructions.pdf";
+	
+		if ($garageTxt !== "South Stadium Garage" && 
+			$garageTxt !== "Highland Avenue Garage" && 
+			$garageTxt !== "Second Street Garage") {
+			$instructions .= "Please share the following instructions with your guest: \n$garageMap\n\n";
+		}
+	
+		if ($garageTxt == "Second Street Garage") {
+			$instructions .= "Please share the following instructions with your guest: \n$garageMap\n\n";
+		}
+	
+		if (preg_match('/(BioMedical)/i', $garageTxt)) {
+			$instructions .= "To view a map of Phoenix BioMedical parking lots, please visit our web site:\n";
+			$instructions .= "https://parking.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
+		}
+	
+		return $instructions;
 	}
 }
 ?>
