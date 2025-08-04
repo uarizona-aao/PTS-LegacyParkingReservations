@@ -48,11 +48,16 @@ function make_htmlentities(&$elem, $setMade = true)
 
 function unmake_htmlentities(&$elem)
 {
-	if (!is_array($elem))
-		$elem = html_entity_decode($elem, ENT_QUOTES);
-	else
-		foreach ($elem as $key => $value)
+	if (!is_array($elem)) {
+		if (is_string($elem)) {
+			$elem = html_entity_decode($elem, ENT_QUOTES);
+		}
+	} else {
+		foreach ($elem as $key => $value) {
+			var_dump($key);var_dump($value);
 			$elem[$key] = unmake_htmlentities($value);
+		}
+	}
 	return $elem;
 }
 

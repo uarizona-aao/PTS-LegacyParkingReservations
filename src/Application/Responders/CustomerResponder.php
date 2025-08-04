@@ -34,4 +34,24 @@ class CustomerResponder {
             'reservation_agreement.html.twig', 
             $data);
     }
+
+    public function confirmation(Response $response, array $data): Response 
+    {
+        return $this->view->render($response, 'components/confirmation.html.twig', [
+            'reservation' => $data['reservation'],
+            'receipt' => $data['receipt'] ?? false,
+            'pdfConfirmFile' => $data['pdfConfirmFile'] ?? null,
+            'auth' => $data['auth'] ?? 0,
+            'can_edit' => $data['can_edit'] ?? false,
+            'can_cancel' => $data['can_cancel'] ?? false,
+            'can_revive' => $data['can_revive'] ?? false,
+            'dateStr' => $data['dateStr'] ?? '',
+            'gg' => $data['gg'] ?? 'guest',
+            'garage_text' => $data['garage_text'] ?? '',
+            'history' => $data['history'] ?? [],
+            'back_url' => $data['back_url'] ?? '/index.php',
+            'path' => $data['path'] ?? $_SERVER['PHP_SELF'],
+            'is_dry_run' => $data['is_dry_run'] ?? false, // Add dry run flag
+        ]);
+    }
 }

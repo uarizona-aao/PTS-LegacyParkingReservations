@@ -1,0 +1,164 @@
+{% extends 'components/base_layout.html.twig' %}
+
+{% block content %}
+<div id="main">
+    <div class="container">
+        <div class="row">
+            <div id="mainContent" class="col-sm-12">
+                <div style="text-align:center;">
+                    {% if receipt %}
+                        <br/><br/>
+                        <span style="font-weight:bold; border: 1px solid black; padding:5px;">
+                            Your reservation (#{{ reservation.conf }}) has been confirmed. You should receive a confirmation email shortly.
+                        </span>
+                        <br/><br/><br/>
+                    {% else %}
+                        <h2>Reservation {{ reservation.conf }} for {{ reservation.deptName }} (FRS {{ reservation.frs }})</h2>
+                    {% endif %}
+
+                    {% if is_dry_run %}
+                        <div class="alert alert-warning">
+                            <strong>Test Mode:</strong> This is a dry run. No actual reservation has been created.
+                        </div>
+                    {% endif %}
+
+                    {% if pdfConfirmFile and (auth >= 4 or reservation.owner) %}
+                        <br/>
+                        <span class="warning" style="border:2px dashed red; padding:8px;">
+                            <a href="/resPDF/{{ pdfConfirmFile }}" target="_blank">
+                                Please Print and Save the PDF Permit for Phoenix BioMedical Parking here.
+                            </a>
+                        </span>
+                        <br/><br/><br/>
+                    {% endif %}
+
+                    {# Actions Section #}
+                    {% if can_edit %}
+                        <form name="form_a" method="post" action="{{ path }}?id={{ reservation.conf }}">
+                            <div class="list-group">
+                                <span style="padding:0 7px; font-style:italic;" class="list-group-item active">Actions</span>
+                                {% if reservation.garageName != 'South Stadium Garage' and reservation.garageName != 'Highland Avenue Garage' %}
+                                    <button type="button" class="list-group-item" 
+                                            onClick="window.location.href='/edit.php?id={{ reservation.conf }}';">
+                                        <img src="/images/edit.gif" width="16" height="16" alt="" align="absmiddle"/>
+                                        &nbsp;Edit This Reservation{{ dateStr }}
+                                    </button>
+
+                                    {% if pdfLink %}
+                                        <a href="/resPDF/{{ pdfConfirmFile }}" target="_blank" 
+                                           style="font-size:12px; padding:2px; border:1px solid grey; color:#CC0000;">
+                                            PDF Confirmation
+                                        </a>
+                                    {% endif %}
+
+                                    {% if can_cancel %}
+                                        <button type="button" class="list-group-item" 
+                                                onclick="if(confirm('Click OK to cancel this reservation')){document.form_a.cancelres.value=1; document.form_a.submit();}">
+                                            <img src="/images/delete.png" width="16" height="16" alt="" align="absmiddle"/>
+                                            &nbsp;Cancel This Reservation
+                                        </button>
+                                        <input type="hidden" name="cancelres" value="" />
+                                    {% endif %}
+
+                                    {% if can_revive %}
+                                        <button type="button" class="list-group-item" onClick="this.form.submit();" name="revive">
+                                            Re-activate This Reservation
+                                        </button>
+                                        <input type="hidden" name="revive" value="revive" />
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </form>
+                    {% endif %}
+
+                    {# Reservation Details #}
+                    <div class="resBox" style="text-align:left; font-size:16px;">
+                        <p><b>Reservation ID:</b> {{ reservation.conf }}</p>
+
+                        <div style="font-weight:bold;">
+                            Date(s): &nbsp;
+                            <span class="thetip" title="Reservation ID {{ reservation.conf }}">
+                                {{ reservation.resdate }}
+                            </span>
+                            {% for id, date in reservation.otherDates %}
+                                {% if id != reservation.conf %}
+                                    , &nbsp;&nbsp;
+                                    <a href='view.php?id={{ id }}' class='thetip' title='Reservation ID {{ id }}'>
+                                        {{ date }}
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <p>
+                            <b>Enter:</b> {{ reservation.resenter }} &nbsp; &nbsp; 
+                            <b>Exit:</b> {{ reservation.resexit }}
+                        </p>
+
+                        <p><b>Garage:</b> {{ garage_text|raw }}</p>
+
+                        {% if gg == "group" %}
+                            <p>
+                                <b>Group Name:</b> {{ reservation.guestList[0] }} &nbsp; &nbsp; 
+                                <b>Spaces:</b> {{ reservation.groupCount }}
+                            </p>
+                        {% else %}
+                            <p><b>Guest List:</b> {{ reservation.guestList|join(' | ') }}</p>
+                        {% endif %}
+
+                        <p>
+                            <b>Guests May Come and Go:</b> 
+                            {% if reservation.garageName in ['South Stadium Garage', 'Highland Avenue Garage'] %}
+                                Yes
+                            {% else %}
+                                {{ reservation.comego ? 'Yes' : 'No' }}
+                            {% endif %}
+                        </p>
+
+                        <p>
+                            <b>Created On:</b> {{ reservation.createdate }} by {{ reservation.userName }}
+                        </p>
+                    </div>
+
+                    {# Navigation Links #}
+                    {% if receipt %}
+                        <p align="center">
+                            <b>
+                                <a href="/create">Make Another Reservation</a> &nbsp; :: &nbsp; 
+                                <a href="/">Home</a>
+                            </b>
+                        </p>
+                    {% else %}
+                        <p align="center">
+                            <b><a href="{{ back_url }}">&lt;&lt; Back</a></b>
+                        </p>
+
+                        {# History Section #}
+                        <h3 align="center">History</h3>
+                        {% if history|length > 0 %}
+                            <table border="0" cellpadding="0" cellspacing="0" align="center" class="resultsTable">
+                                <tr class="title">
+                                    <td>Date/Time</td>
+                                    <td>User</td>
+                                    <td>Note</td>
+                                    <td>Size Change</td>
+                                </tr>
+                                {% for entry in history %}
+                                    <tr valign="top">
+                                        <td>{{ entry.DATERECORDED }}</td>
+                                        <td>{{ entry.USER_NAME }}</td>
+                                        <td>{{ entry.NOTE }}</td>
+                                        <td>{{ entry.SIZE_CHANGE }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </table>
+                        {% else %}
+                            <p class="warning">No History</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

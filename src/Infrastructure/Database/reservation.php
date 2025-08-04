@@ -150,7 +150,7 @@ class reservation {
 		string $etime,
 		string $gg, // 'group' or 'guest'
 		mixed $option1,
-		int $option2,
+		mixed $option2,
 		string $comeGo,
 		int|string $extra,
 		string $addGuests = '',
@@ -350,8 +350,34 @@ class reservation {
 				$qVars['KFS_SUB_OBJECT_CODE_FK'] = $KFS_SUB_OBJECT_CODE_FK;
 				if(!$dry) {
 					$conf = $dbConn->sSeqInsert($query, "PARKING.GR_RESERVATION_ID", $qVars);
+					$this->conf = $conf;
+					$this->getRes($conf, true);
 				} else {
 					$conf = 888; // A fake id for dry run
+					// Populate required properties for dry run
+					$this->resdate = $dates[0];
+					$this->resenter = $stime;
+					$this->resexit = $etime;
+					$this->garageName = getGarageByID($garageid);
+					$this->deptName = $_SESSION['eds_data']['deptname'] ?? '';
+					$this->frs = $frs;
+					$this->KFS_SUB_ACCOUNT_FK = $KFS_SUB_ACCOUNT_FK;
+					$this->KFS_SUB_OBJECT_CODE_FK = $KFS_SUB_OBJECT_CODE_FK;
+					$this->userName = $_SESSION['eds_data']['givenname'] . ' ' . $_SESSION['eds_data']['sn'];
+					$this->createdate = date('Y-m-d H:i:s');
+					
+					// Handle guest/group info
+					if ($gg === 'guest') {
+						$this->guestList = is_array($option1) ? $option1 : explode(' | ', $option1);
+						$this->groupCount = count($this->guestList);
+					} else {
+						$this->guestList = is_array($option1) ? $option1 : [$option1];
+						$this->groupCount = (int) $option2;
+					}
+					
+					$this->comego = $comeGo === '1';
+					$this->active = true;
+					$this->owner = true;
 				}
 				$wasInserted = "query: $query"."
 						qvars:
@@ -410,7 +436,7 @@ class reservation {
 					elseif ($gg=='group' && !$this->guestList) {
 						if (is_array($option1)) $this->guestList = $option1[0];
 						else $this->guestList = $option1;
-						$this->groupCount = $option2;
+						$this->groupCount = (int) $option2;
 					}
 
 					$garageLinkTxt1 = $garageLinkTxt2 = "";
@@ -449,7 +475,11 @@ class reservation {
 						$recurAppend  = ''; // " (each day)"; // got rid of this - SR https://www.pts.arizona.edu/servicerequest/index.php?rqid=c12958611
 						$msg3 .= "$resDateRecur.\n";
 					}
-					$msg3 .= "Guest List/Group Name: ".unmake_htmlentities($this->guestList)."\n\n";
+					if (is_array($this->guestList)) {
+						$msg3 .= "Guest List/Group Name: " . implode(", ", $this->guestList) . "\n\n";
+					} else {
+						$msg3 .= "Guest List/Group Name: " . unmake_htmlentities($this->guestList) . "\n\n";
+					}
 					$msg3 .= "This reservation will be billed to KFS account ".$this->frs.".\n";
 					if (@$this->KFS_SUB_ACCOUNT_FK)
 						$msg3 .= "    (KFS Sub Acct.:".$this->KFS_SUB_ACCOUNT_FK.")\n";
@@ -592,17 +622,23 @@ class reservation {
 				$from = "PTS-ParkingReservations@arizona.edu";
 				$bcc = "PTS-IT-Emails@email.arizona.edu";
 
-				$wasEmailed = $this->send_email($recipient, $subject, $text, $from, $bcc);
+				if(!$dry) {
+					$wasEmailed = $this->send_email($recipient, $subject, $text, $from, $bcc);
+				} else {
+					$wasEmailed = true;
+				}
 			} else {
-				$wasEmailed = $this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "", "PTS-IT-Emails@email.arizona.edu");
+				if(!$dry) {
+					$wasEmailed = $this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "", "PTS-IT-Emails@email.arizona.edu");
+				} else {
+					$wasEmailed = true;
+				}
 				// mail($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
 				//mail('jbrabec@email.arizona.edu', 'Garage Reservation conf 2', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\n");			
 			}	
 		} else {
 			$wasEmailed = false;
 		}
-
-		var_dump($wasEmailed);exit;
 
 		if ($wasInserted && !$wasEmailed) {
 			$msg_err = '~~~~~~~~~~~~~~ CUST EMAIL: ' . $_SESSION['cuinfo']['email'] . "\n\n";

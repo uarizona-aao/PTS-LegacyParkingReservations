@@ -82,44 +82,53 @@ class CreateCustomerViewAction extends CustomerAction
 
             $_SESSION['resConfirmed'] = 1;
 
-            print "<pre>";
-            print("Email sent:");
-            print("POST");
-            var_dump($_POST);
-            print("dates");
-            var_dump($dates);
-            print("Customer");
-            var_dump($customer);
-            print("op1)");
-            var_dump($option1);
-            print("op2");
-            var_dump($option2);
-            print("comego");
-            var_dump($comeGo);
-            print("add guest");
-            var_dump($addGuests);
-            exit;
             // Create reservations and send confimration emails.
-            $res->newRes($_POST['frs'], $_POST['KFS_SUB_ACCOUNT_FK'], $_POST['KFS_SUB_OBJECT_CODE_FK'], $customer, $_POST['garage'], 
-                $dates, $_POST['enterTime'], $_POST['exitTime'], $_POST['groupGuest'], 
-                $option1, $option2, $comeGo, isChecked("allowExtra","1","0"), $_POST[$addGuests] ?? '');
+            $res->newRes(
+                $_POST['frs'], 
+                $_POST['KFS_SUB_ACCOUNT_FK'], 
+                $_POST['KFS_SUB_OBJECT_CODE_FK'], 
+                $customer, 
+                $_POST['garage'], 
+                $dates, 
+                $_POST['enterTime'], 
+                $_POST['exitTime'], 
+                $_POST['groupGuest'], 
+                $option1, 
+                $option2, 
+                $comeGo, 
+                isChecked("allowExtra","1","0"), 
+                $_POST[$addGuests] ?? '',
+                true);
             $_SESSION['resConfirmed'] = 0;
 
             if ($res->error) {
-                // TODO this creates an error and redirects back to the original form
-                // $errMsg = $res->errorOut($res->error,$res->errordate);
-                // $resInfo = array();
-                // $glg = '';
-                // massagePost($resInfo, $glg, true);
-                // $cancelUri = 'index.php';
-                // include_once 'resform.php'; 
+                return $this->customerResponder->create($this->response, [
+                    'error' => $res->errorOut($res->error, $res->errordate),
+                    'reservation' => $resInfo ?? [],
+                    'glg' => $glg ?? '',
+                    'cancelUri' => 'index.php'
+                ]);
             }
             elseif ($res->conf) {
                 // TODO redirect to 
                 // locationHref('/parking/garage-reservation/view.php?action=receipt&id='.$res->conf.'&pdfConfirmFile='.$pdfConfirmFile);
+                return $this->customerResponder->confirmation($this->response, [
+                    'reservation' => $res,
+                    'receipt' => true,
+                    'gg' => $_POST['groupGuest'] ?? 'guest',
+                    'pdfConfirmFile' => $pdfConfirmFile ?? null,
+                    'auth' => $customer['auth'],
+                    'can_edit' => true,
+                    'garage_text' => getGarageByID($_POST['garage']),
+                    'is_dry_run' => true, // Add this flag for dry runs
+                ]);
             } else {
-                // this 
-                $data['error'] = $res->errorOut("noConf");
+                return $this->customerResponder->create($this->response, [
+                    'error' => $res->errorOut("noConf"),
+                    'reservation' => $resInfo ?? [],
+                    'glg' => $glg ?? '',
+                    'cancelUri' => 'index.php'
+                ]);
             }
         // We submitted the initial resform and are doing checks...
         } elseif (isset($_POST['reserve']) || isset($_POST['reserve_x'])) {
@@ -256,5 +265,64 @@ class CreateCustomerViewAction extends CustomerAction
         else {
             $glg = "guest";
         }
+    }
+
+    private function canEdit($res): bool
+    {
+        $auth = $_SESSION['cuinfo']['auth'] ?? 0;
+        return ($auth >= 4 || $res->owner) && 
+            strtotime($res->resdate) >= strtotime('today');
+    }
+
+    private function canCancel($res): bool
+    {
+        $auth = $_SESSION['cuinfo']['auth'] ?? 0;
+        return ($res->owner && $res->canCancel([$res->resdate])) || $auth >= 4;
+    }
+
+    private function canRevive($res): bool
+    {
+        $auth = $_SESSION['cuinfo']['auth'] ?? 0;
+        return !$res->active && $auth >= 4 && 
+            strtotime($res->resdate) >= strtotime('today');
+    }
+
+    private function formatGarageText($garageName): string
+    {
+        if (preg_match('/(BioMedical)/i', $garageName)) {
+            $pbc_lot_num = preg_match('/(10003)/i', $garageName) ? '10003' : '10002';
+            $pbc_lot_loc = ($pbc_lot_num == '10003') 
+                ? "Lot 10003, Located at 550 E Van Buren, 85004" 
+                : "Lot 10002, Located at 714 E Van Buren, 85004";
+            return "Phoenix BioMedical Campus <a href='https://parking.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf' target='_blank'>{$pbc_lot_loc}</a>";
+        }
+        return $garageName;
+    }
+
+    private function getReservationHistory($resId): array
+    {
+        $dbConn = new database();
+        $query = "SELECT N.*, TO_CHAR(DATE_RECORDED,'MM-DD-YY HH:MI AM') AS DATERECORDED, U.USER_NAME 
+                FROM PARKING.GR_RESERVATION_NOTE N 
+                INNER JOIN PARKING.GR_USER U ON USER_ID_FK=USER_ID 
+                WHERE RESERVATION_ID_FK = :resid 
+                ORDER BY DATE_RECORDED DESC";
+        $dbConn->sQuery($query, ['resid' => $resId]);
+        return $dbConn->results ?? [];
+    }
+
+    private function generateBackUrl(): string
+    {
+        $params = [
+            'view', 'searchString', 'searchType', 
+            'sh_DEPT_NO_FK', 'sh_USER_NAME'
+        ];
+        $queryString = [];
+        foreach ($params as $param) {
+            if (isset($_GET[$param])) {
+                $queryString[] = $param . '=' . urlencode($_GET[$param]);
+            }
+        }
+        return 'index.php' . ($queryString ? '?' . implode('&', $queryString) : '');
     }
 }
