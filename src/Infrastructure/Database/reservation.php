@@ -151,7 +151,7 @@ class reservation {
 		string $etime,
 		string $gg, // 'group' or 'guest'
 		mixed $option1, // arary if guest, string if group
-		mixed $option2,
+		mixed $option2, // str int of spaces if group
 		string $comeGo,
 		int|string $extra,
 		string $addGuests = '',
@@ -582,7 +582,7 @@ class reservation {
 						}
 					}
 					if(!$dry) {
-						if ($gg=="guest") $this->addGuest($conf,$option1,1,0,0,true);
+						if ($gg=="guest") $this->addGuest($conf,$option1,$spaces,0,0,true);
 						else $this->addGuest($conf,$option1,$option2,0,0,true);
 					}
 				}
@@ -934,7 +934,7 @@ class reservation {
 				}
 			}
 			if (!$new)
-				$this->resNote($resid, $customer["userid"], "Added Guest(s): ".implode(" | ",$guest), $sizeChange, 1);
+				$this->resNote($resid, $this->customer["userid"], "Added Guest(s): ".implode(" | ",$guest), $sizeChange, 1);
 		}
 	}
 

@@ -168,6 +168,8 @@ class CreateCustomerViewAction extends CustomerAction
             array_walk($postData, function (&$val, $key) {
                 $val = str_replace('"', "''", stripslashes($val));
             });
+
+            // If error, we want to just return customerResponder->create with error message and values preserved.
             
             return $this->customerResponder->agreement($this->response, [
                 'reservation' => $reservationData,

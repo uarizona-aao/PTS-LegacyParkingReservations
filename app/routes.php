@@ -93,32 +93,23 @@ return function (App $app) {
             ],
         ];
 
-        $result = $reservation->newRes(
-            $data['frs'] ?? '',
-            $data['kfs_account'] ?? '',
-            $data['kfs_sub_object_code'] ?? '',
-            $data['customer'] ?? [],
-            $data['garage'] ?? 0,
-            $data['dates'] ?? [],
-            $data['start_time'] ?? '',
-            $data['end_time'] ?? '',
-            $data['group_guests'] ?? '',
-            $data['option1'] ?? '',
-            $data['option2'] ?? 0,
-            $data['come_go'] ?? '0',
-            $data['extra'] ?? 0,
-            $data['add_guests'] ?? '',
-            $data['dry'] ?? false
-        );
-
-
-        // // Write the above to response body as a json struct
-
-        // // $result = $reservation->newRes($frs, $kfs_account, $kfs_sub_object_code, $customer, $garage, $dates, 
-        // // $startTime, $endTime, $gg, $option1, $option2, $comeGo, $extra, $addGuests, $notes, $dry_run);
-
-        // // var_dump($result);
-        // // var_dump($reservation);
+        // $result = $reservation->newRes(
+        //     $data['frs'] ?? '',
+        //     $data['kfs_account'] ?? '',
+        //     $data['kfs_sub_object_code'] ?? '',
+        //     $data['customer'] ?? [],
+        //     $data['garage'] ?? 0,
+        //     $data['dates'] ?? [],
+        //     $data['start_time'] ?? '',
+        //     $data['end_time'] ?? '',
+        //     $data['group_guests'] ?? '',
+        //     $data['option1'] ?? '',
+        //     $data['option2'] ?? 0,
+        //     $data['come_go'] ?? '0',
+        //     $data['extra'] ?? 0,
+        //     $data['add_guests'] ?? '',
+        //     $data['dry'] ?? false
+        // );
 
         $response->getBody()->write($reservation->error);
         return $response;

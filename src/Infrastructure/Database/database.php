@@ -322,7 +322,7 @@ class database
 		{
 			$rows++;
 			foreach ($colNames as $i_c=>$aColName)
-				$output[$aColName][] = @$row[$aColName]; // $row may contain NULL value
+				$output[$aColName][] = $row[$aColName] ?? null; // Handle unset $aColName by passing null
 		}
 		return $rows;
 	}
