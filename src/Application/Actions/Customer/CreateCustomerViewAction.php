@@ -8,15 +8,21 @@ use Psr\Http\Message\ResponseInterface as Response;
 use App\Infrastructure\Database\database;
 use App\Application\Responders\CustomerResponder;
 use App\Infrastructure\Database\reservation;
+use App\Application\Services\DateValidator;
 
 include_once __DIR__.'/../../../form_functions.php';
 
 class CreateCustomerViewAction extends CustomerAction
 {
     private CustomerResponder $customerResponder;
+    private DateValidator $dateValidator;
 
-    public function __construct(CustomerResponder $customerResponder) {
+    public function __construct(
+        CustomerResponder $customerResponder,
+        DateValidator $dateValidator
+    ) {
         $this->customerResponder = $customerResponder;
+        $this->dateValidator = $dateValidator;
     }
     
     /**
@@ -45,6 +51,7 @@ class CreateCustomerViewAction extends CustomerAction
             'unselectDateMsg' => "Please unselect the date you wish to change.",
             'use_default_jquery' => false, // bit for jquery fix.
             'garageOptions' => [],
+            'dateValidator' => $this->dateValidator
         ];
 
 
@@ -136,6 +143,12 @@ class CreateCustomerViewAction extends CustomerAction
             //================= confirmation and agreement ===================
             array_walk($_POST,"fixPost");
             $dates = explode(",",$_POST['dates']);
+
+            // Check for restricted dates
+            if ($dateError = $this->dateValidator->validateDates($dates)) {
+                $data['error'] = $dateError;
+                return $this->customerResponder->create($this->response, $data);
+            }
     
             $error = false;
             if ($customer['auth']<3) {
@@ -169,8 +182,7 @@ class CreateCustomerViewAction extends CustomerAction
                 $val = str_replace('"', "''", stripslashes($val));
             });
 
-            // If error, we want to just return customerResponder->create with error message and values preserved.
-            
+            // Rest of the flow goes normally.
             return $this->customerResponder->agreement($this->response, [
                 'reservation' => $reservationData,
                 'post_data' => $postData

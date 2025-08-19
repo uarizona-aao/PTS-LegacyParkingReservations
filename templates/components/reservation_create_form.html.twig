@@ -72,6 +72,8 @@ function checkFormRes () {
 		if (!enterTime.value || !exitTime.value)
 			alerts += "Please enter 'Enter Time' and 'Exit Time'\n";
 
+		// Ensure certain dates cannot be submitted for home games
+
 
 		if (!garage.value)
 			alerts += "Please select a garage\n";
@@ -120,7 +122,11 @@ function checkFormRes () {
 <h2>
 {{ mode == 'create' ? 'Make a Reservation' : "Edit Reservation " + reservation.RESERVATION_ID }}
 </h2>
-{{ error }}
+{% if error is defined and error %}
+<div class="alert alert-danger" role="alert">
+	{{ error }}
+</div>
+{% endif %}
 <div class="resBox">
 <form name="resForm" method="POST" action="?id={{ res_id }}" onSubmit="return checkFormRes();">
     <p class="title">General Info:</p>
@@ -153,8 +159,20 @@ function checkFormRes () {
 				<div id="multiDateBox" class="box"></div>
 				<input type="hidden" name="dates" value="{{ redDates }}" />
 				<script>
+					let restrictedDates = {{ dateValidator.getRestrictedDates()|json_encode|raw }}
+
+					function checkRestrictedDates(date) {
+						var formattedDate = $.datepicker.formatDate('mm/dd/yy', date);
+						if ($.inArray(formattedDate, restrictedDates) != -1) {
+							return [false, "", "Unavailable for Home game days."]; // Disable the date and add a class/tooltip
+						}
+						return [true, "", ""]; // Keep the date enabled
+					}
+
+
 					$('#multiDateBox').multiDatesPicker({
 						minDate: 1,
+						beforeShowDay: checkRestrictedDates,
 						{{ addDatesStr ? "addDates: [" ~ addDatesStr ~ "]," : '' }}
 						{{ defaultDateStr ? "defaultDate: '" ~ defaultDateStr ~ "'," : '' }}
 					});
