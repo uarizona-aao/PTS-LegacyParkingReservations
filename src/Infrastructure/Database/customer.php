@@ -1,5 +1,8 @@
 <?php
 namespace App\Infrastructure\Database;
+use App\Application\Responders\CustomerResponder;
+use Slim\Views\Twig;
+use Slim\Factory\AppFactory;
 
 class customer
 {
@@ -19,7 +22,7 @@ class customer
 		// Since processing a new customer will instatiate the login class but will instead be called from the database,
 		//		it's necessary to determine which class is being passed.
 		$className = get_class($login);
-		if ($className=="login") {
+		if ($className=="App\Infrastructure\Database\GrLogin") {
 			$this->login = $login;
 			$this->db = $login->db;
 		}
@@ -28,30 +31,15 @@ class customer
 
 	function custset()
 	{
-		if (!$this->login->dbkey) {
-			$this->login->error = "custfail";
-			$this->login->errormsg = "Could not get DB Key";
-			return false;
-		}
-
-		if (checkEnabled('Webauth Garage'))
-		{
+		// No longer using dbkey. Using netid to look up user info.
+		// CheckEnabled is pointless; we don't need to control it here.
 			// $this->dbkey = $_SESSION['eds_data']['dbkey'];
-			$results['count'] = 111;
-			$results[0]['mail'][0]					= $_SESSION['eds_data']['mail'];
-			$results[0]['telephonenumber'][0]	= $_SESSION['eds_data']['employeephone'];
-			$results[0]['cn'][0]						= $_SESSION['eds_data']['cn'];
-			$results[0]['department'][0]			= $_SESSION['eds_data']['deptname'];
-		}
-		else
-		{
-			// OLD
-			//$ds = ldap_connect('ldap.arizona.edu');
-			//$bind = ldap_bind($ds);
-			//$sr = ldap_search($ds, "o=University of Arizona,c=US", "(&(objectclass=*)(dbkey=".$this->login->dbkey."))");
-			//$results = ldap_get_entries($ds, $sr);
-			//ldap_close($ds);
-		}
+		$results['count'] = 111;
+		$results[0]['mail'][0]					= $_SESSION['eds_data']['mail'];
+		$results[0]['telephonenumber'][0]	= $_SESSION['eds_data']['employeephone'];
+		$results[0]['cn'][0]						= $_SESSION['eds_data']['cn'];
+		$results[0]['department'][0]			= $_SESSION['eds_data']['deptname'];
+
 
 		if (!count($results) || $results['count']<1)
 		{
@@ -66,18 +54,32 @@ class customer
 		);
 
 		$this->setNewInfo($results,$this->login->cuinfo);
-
-		$cForm = $this->writeCustForm();
-
 		$GLOBALS['newCust'] = true;
 		$_SESSION['custcreate'] = true;
 
-		return $cForm;
+		// Post to the new route and handle the user there.
+		$twig = Twig::create(__DIR__.'/../../../templates', ['cache' => false]);
+		$responder = new CustomerResponder($twig);
+
+		// create a Response to pass in
+		$responseFactory = AppFactory::determineResponseFactory();
+		$response = $responseFactory->createResponse();
+
+		$response = $responder->confirm_user_information($response, [
+			'newInfo' => $this->newInfo,
+			'path' => $_ENV['APP_URL'] . '/confirm_user_information'
+		]);
+		echo $response->getBody();
+		exit;
+
+
+		// $cForm = $this->writeCustForm();
+		return 1;
 	}
 
 
 	function setNewInfo ($results,$cuinfo=NULL) {
-		if (!isset($results[0]['mail'][0])) $results[0]['mail'] = array(0=>$this->login->netid."@email.arizona.edu");
+		if (!isset($results[0]['mail'][0])) $results[0]['mail'] = array(0=>$this->login->netid."@arizona.edu");
 		$deptno = $_SESSION['eds_data']['deptno'] ? $_SESSION['eds_data']['deptno'] : $this->login->db->getDeptNo(strtoupper($results[0]['department'][0]));
 		$this->newInfo = array(
 			'email'=>$results[0]['mail'][0],
@@ -147,35 +149,9 @@ class customer
 
 	function deptset($userid)
 	{
-		if (!$this->login->dbkey)
-		{
-			$this->error = "custfail";
-			$this->errorMsg = "Could not get DB Key";
-			return false;
-		}
-
-		if (checkEnabled('Webauth Garage'))
-		{
-			// New webauth way.
-			$results['count'] = 11;
-			$results[0]['department'][0] = $_SESSION['eds_data']['deptname'];
-		}
-		else
-		{
-			//$ds = ldap_connect('ldap.arizona.edu');
-			//$bind = ldap_bind($ds);
-			//$sr = ldap_search($ds, "o=University of Arizona,c=US", "(&(objectclass=*)(dbkey=".$this->login->dbkey."))");
-			//$results = ldap_get_entries($ds, $sr);
-			//ldap_close($ds);
-		}
-
-		if (!count($results) || $results['count']<1)
-		{
-			$this->error = "custfail";
-			$this->errorMsg = "Phonebook look-up failed";
-			//echo $this->error_out();
-			return false;
-		}
+		// New webauth way.
+		$results['count'] = 11;
+		$results[0]['department'][0] = $_SESSION['eds_data']['deptname'];
 
 		$this->userid = $userid;
 		$this->newInfo['deptno'] = $_SESSION['eds_data']['deptno'] ? $_SESSION['eds_data']['deptno'] : $this->login->db->getDeptNo(strtoupper($results[0]['department'][0]));

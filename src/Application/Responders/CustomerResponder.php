@@ -36,6 +36,11 @@ class CustomerResponder {
             $data);
     }
 
+    public function confirm_user_information(Response $response, array $data): Response 
+    {
+        return $this->view->render($response, 'confirm_user_information.html.twig', $data);
+    }
+
     public function confirmation(Response $response, array $data): Response 
     {
         return $this->view->render($response, 'components/confirmation.html.twig', [

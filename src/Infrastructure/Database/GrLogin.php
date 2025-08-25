@@ -86,10 +86,11 @@ class GrLogin
 				// check if it's a dept missing or the whole customer
 				$this->db->sQuery("SELECT USER_ID FROM PARKING.GR_USER WHERE LOWER(NETID)=:login", array('login'=>$Pnetid));
 
-				if ($this->db->rows) // if they're missing from GR_USER_DEPARTMENT then add them
+				if ($this->db->rows) { // if they're missing from GR_USER_DEPARTMENT then add them
 					$this->cForm = $newcust->deptset($this->db->results['USER_ID'][0]);
-				else  // otherwise add them to the local user table
+				} else  { // otherwise add them to the local user table
 					$this->cForm = $newcust->custset();
+				}
 			}
 
 				// if ($GLOBALS['DEBUG_DEBUG'])

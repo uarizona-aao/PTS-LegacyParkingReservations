@@ -48,6 +48,11 @@ AppFactory::setContainer($container);
 $app = AppFactory::create();
 $callableResolver = $app->getCallableResolver();
 
+// set base app path if production
+if ($_ENV['APP_ENV'] === 'production') {
+	$app->setBasePath('/garage_reservation');
+}
+
 // Register middleware
 $middleware = require __DIR__ . '/../app/middleware.php';
 $middleware($app);

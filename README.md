@@ -1,5 +1,6 @@
 # TODO LIST FOR NOW
 
-- Historical/ flow: public/index.php, public/garage-reservation-include.php/ pulls Templates/
+* Consolidate link handling and urls for the templates.
 
-* top menu consumed to the appropriate header component
+DEV: Dev server. 
+PROD: Lives in a subfolder. Needs base app path declared in public/index.php; paths normalized for this in prod.

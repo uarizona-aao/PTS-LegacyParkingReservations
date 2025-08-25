@@ -1,0 +1,51 @@
+{% extends 'components/base_layout.html.twig' %}
+
+{% block content %}
+    <p>&nbsp;</p>
+
+<form method="post" action="{{ path }}" onsubmit="return checkCustForm();">
+    <table class="formbox" align="center">
+        <tr>
+            <th colspan="2" class="title">
+                <div align="center">Please Verify Your Information</div>
+            </th>
+        </tr>
+
+        <tr valign="middle">
+            <td class="req" align="right">Name</td>
+            <td><input type="text" name="cuname" size="30" value="{{ newInfo.cuname }}"/></td>
+        </tr>
+
+        <tr valign="middle">
+            <td class="req" align="right">Email</td>
+            <td><input type="text" name="email" size="30" value="{{ newInfo.email }}"/></td>
+        </tr>
+
+        <tr valign="middle">
+            <td class="req" align="right">Phone</td>
+            <td><input type="text" name="phone" size="12" maxlength="12" value="{{ newInfo.phone }}"/></td>
+        </tr>
+
+        <tr valign="middle">
+            <td class="req" align="right">
+                Department Number<br/>(Five digits: include leading zeros)
+            </td>
+            <td><input type="text" name="deptno" size="5" maxlength="5" value="{{ newInfo.deptno }}"/></td>
+        </tr>
+
+        <tr valign="middle">
+            <td class="req">(Five digits - include leading zeros)</td>
+            <td>&nbsp;</td>
+        </tr>
+
+        <tr align="center">
+            <td colspan="2" class="submitter">
+                <input type="submit" name="custcreate" value="Continue &gt;&gt;"/>
+                <input type="hidden" name="netid" value="{{ newInfo.netid }}"/>
+                <input type="hidden" name="auth" value="{{ newInfo.auth }}"/>
+            </td>
+        </tr>
+    </table>
+</form>
+
+{% endblock %}

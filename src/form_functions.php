@@ -3,10 +3,10 @@ use App\Infrastructure\Database\database;
 
 # Godawful pricing fix.
 $_SESSION['G_price_pbc_10003']	= 15; // for pbc lot 10003 only (this lot does not have comego)
-$_SESSION['G_price_regular']		= 8; // was 7
+$_SESSION['G_price_regular']		= 9; // was 7
 $_SESSION['G_price_comeandgo']	= 9; // was 8
-$_SESSION['G_price_second']		= 8; // 2'nd st garage
-$_SESSION['G_price_comeandgo_second']	= 10; // was 8
+$_SESSION['G_price_second']		= 9; // 2'nd st garage
+$_SESSION['G_price_comeandgo_second']	= 9; // was 8
 
 
 function isChecked ($key,$true,$false) {

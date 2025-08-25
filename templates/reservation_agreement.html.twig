@@ -1,7 +1,7 @@
 {% extends 'components/base_layout.html.twig' %}
 
 {% block content %}
-<form name="resForm" method="POST" action="/create">
+<form name="resForm" method="POST" action="create">
 <h2>Agreement and Confirmation</h2>
 
 <div align="left" style="margin:0 auto; width:800px; padding:20px; border:solid 2px #003366;">
@@ -35,7 +35,7 @@
 
             {% if reservation.garage_name matches '/bio.?med/si' %}
                 <b>Garage:</b> Phoenix BioMedical Campus<b>,</b>
-                <a href="http://parking.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf" target="_blank">
+                <a href="https://pciapps.ba.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf" target="_blank">
                     Parking Lot 10002,&nbsp; 714 E Van Buren
                 </a>
             {% else %}
@@ -67,7 +67,7 @@
 
 <p align="center">
     <a href="/">
-        <img src="/images/cancelform-button.gif" width="120" height="25" alt="Cancel" align="absmiddle" border="0"/>
+        <img src="images/cancelform-button.gif" width="120" height="25" alt="Cancel" align="absmiddle" border="0"/>
     </a>
 </p>
 

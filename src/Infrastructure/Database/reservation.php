@@ -401,6 +401,7 @@ class reservation {
 						'frs' => $frs,
 						'KFS_SUB_ACCOUNT_FK' => $KFS_SUB_ACCOUNT_FK,
 						'KFS_SUB_OBJECT_CODE_FK' => $KFS_SUB_OBJECT_CODE_FK,
+						'price' => $new_price,
 						";
 
 				// make sure res is actually there
@@ -454,7 +455,7 @@ class reservation {
 						$pbc_lot_loc = ($pbc_lot_num=='10003') ? "Lot 10003,\nLocated at 550 E Van Buren, 85004" : "Lot 10002,\nLocated at 714 E Van Buren, 85004";
 						// Use 'Phoenix BioMedical Campus' because don't want "Phoenix BioMedical 10003"
 						$garageTxt = 'Phoenix BioMedical Campus ' . $pbc_lot_loc;
-						$garageLinkTxt1 = "To view a map of Phoenix BioMedical parking lots, please visit our web site:\nhttps://parking.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
+						$garageLinkTxt1 = "To view a map of Phoenix BioMedical parking lots, please visit our web site:\nhttps://pciapps1.ba.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
 						$garageLinkTxt2 =         "apps.ba.arizona.edu/garage-reservation/images/maps/phoenixmedicalcenterlot.pdf";
 					}
 
@@ -493,11 +494,11 @@ class reservation {
 					$msg3 .= "$confNums\n\n";
 					$msg3 .= "$garageLinkTxt1";
 						if ($garageTxt!=="South Stadium Garage" && $garageTxt!=="Highland Avenue Garage" && $garageTxt!=="Second Street Garage") {
-							$msg3 .= "Please share the following instructions with your guest: \n https://apps.ba.arizona.edu/garage-reservation/pdf/garage-instructions.pdf \n\n";
+							$msg3 .= "Please share the following instructions with your guest: \n https://pciapps1.ba.arizona.edu/garage_reservation/pdf/garage-instructions.pdf \n\n";
 						}
 					
 					if ($garageTxt=="Second Street Garage") {
-						$msg3 .= "Please share the following instructions with your guest: \n https://apps.ba.arizona.edu/garage-reservation/pdf/garage-instructions.pdf  \n\n ";
+						$msg3 .= "Please share the following instructions with your guest: \n https://pciapps1.ba.arizona.edu/garage_reservation/pdf/garage-instructions.pdf  \n\n ";
 					}
 					
 					$msg3 .= "Visitor Programs\nUA Parking & Transportation Services\n1117 E. Sixth Street\nTucson, AZ 85721-0181\n(520) 621-3710\n";
@@ -561,7 +562,7 @@ class reservation {
 						$pdf->Output("$publicPath/$pdfConfirmFile", 'F');
 
 						// Add the PDF link to the email message
-						$msg2 = "You can print your [PDF] confirmation here: \nhttps://apps.ba.arizona.edu/garage-reservation/resPDF/$pdfConfirmFile\n\n";
+						$msg2 = "You can print your [PDF] confirmation here: \nhttps://pciapps1.ba.arizona.edu/garage-reservation/resPDF/$pdfConfirmFile\n\n";
 					} 
 				}
 				
@@ -1270,7 +1271,7 @@ class reservation {
 		// Generate PDF link if available
 		if ($pdfConfirmFile) {
 			$msg2 = "You can print your [PDF] confirmation here: \n";
-			$msg2 .= "https://apps.ba.arizona.edu/garage-reservation/resPDF/$pdfConfirmFile\n\n";
+			$msg2 .= "https://pciapps1.ba.arizona.edu/garage_reservation/resPDF/$pdfConfirmFile\n\n";
 		}
 	
 		// Generate reservation details
@@ -1349,7 +1350,7 @@ class reservation {
 	private function getGarageSpecificInstructions(string $garageTxt): string {
 		$instructions = '';
 	
-		$garageMap = "https://apps.ba.arizona.edu/garage-reservation/pdf/garage-instructions.pdf";
+		$garageMap = "https://pciapps1.ba.arizona.edu/garage_reservation/pdf/garage-instructions.pdf";
 	
 		if ($garageTxt !== "South Stadium Garage" && 
 			$garageTxt !== "Highland Avenue Garage" && 
@@ -1363,7 +1364,7 @@ class reservation {
 	
 		if (preg_match('/(BioMedical)/i', $garageTxt)) {
 			$instructions .= "To view a map of Phoenix BioMedical parking lots, please visit our web site:\n";
-			$instructions .= "https://parking.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
+			$instructions .= "https://pciapps1.ba.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
 		}
 	
 		return $instructions;

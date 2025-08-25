@@ -50,6 +50,7 @@ class WebauthMiddleware implements Middleware
             . (strtok($serverParams['REQUEST_URI'], '?') ?: '');
 
 		// DEV-ONLY; checking for dev-auth-as' cookie
+		// Only useful for debugging users on production.
 		$cookies = $request->getCookieParams();
 		if ($_ENV['APP_ENV'] === "development" 
 			&& isset($cookies['dev-auth-as']) && !empty($cookies['dev-auth-as'])) {
@@ -69,7 +70,7 @@ class WebauthMiddleware implements Middleware
 			$_SESSION['resuser']['lastname'] = $_SESSION['eds_data']['sn'];
 			$_SESSION['resuser']['phone'] = $_SESSION['eds_data']['employeephone'] ?? '';
 			$_SESSION['resuser']['customertype'] = "UA";
-	
+
 			// Also populate the auth data from GrLogin class implementation
 			$login = new GrLogin($_SESSION['webauth_data']['netid'], '', null);
 	
@@ -121,7 +122,6 @@ class WebauthMiddleware implements Middleware
                 $_SESSION['resuser']['lastname'] = $_SESSION['eds_data']['sn'];
                 $_SESSION['resuser']['phone'] =  $_SESSION['eds_data']['employeephone'] ?? '';
                 $_SESSION['resuser']['customertype'] = "UA";
-
 				// Also populate the auth data from GrLogin class implementation
 				$login = new GrLogin($_SESSION['webauth_data']['netid'], '', null);
 			}

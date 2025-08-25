@@ -25,7 +25,7 @@
                     {% if pdfConfirmFile and (auth >= 4 or reservation.owner) %}
                         <br/>
                         <span class="warning" style="border:2px dashed red; padding:8px;">
-                            <a href="/resPDF/{{ pdfConfirmFile }}" target="_blank">
+                            <a href="resPDF/{{ pdfConfirmFile }}" target="_blank">
                                 Please Print and Save the PDF Permit for Phoenix BioMedical Parking here.
                             </a>
                         </span>
@@ -40,12 +40,12 @@
                                 {% if reservation.garageName != 'South Stadium Garage' and reservation.garageName != 'Highland Avenue Garage' %}
                                     <button type="button" class="list-group-item" 
                                             onClick="window.location.href='/edit.php?id={{ reservation.conf }}';">
-                                        <img src="/images/edit.gif" width="16" height="16" alt="" align="absmiddle"/>
+                                        <img src="images/edit.gif" width="16" height="16" alt="" align="absmiddle"/>
                                         &nbsp;Edit This Reservation{{ dateStr }}
                                     </button>
 
                                     {% if pdfLink %}
-                                        <a href="/resPDF/{{ pdfConfirmFile }}" target="_blank" 
+                                        <a href="resPDF/{{ pdfConfirmFile }}" target="_blank" 
                                            style="font-size:12px; padding:2px; border:1px solid grey; color:#CC0000;">
                                             PDF Confirmation
                                         </a>
@@ -54,7 +54,7 @@
                                     {% if can_cancel %}
                                         <button type="button" class="list-group-item" 
                                                 onclick="if(confirm('Click OK to cancel this reservation')){document.form_a.cancelres.value=1; document.form_a.submit();}">
-                                            <img src="/images/delete.png" width="16" height="16" alt="" align="absmiddle"/>
+                                            <img src="images/delete.png" width="16" height="16" alt="" align="absmiddle"/>
                                             &nbsp;Cancel This Reservation
                                         </button>
                                         <input type="hidden" name="cancelres" value="" />
