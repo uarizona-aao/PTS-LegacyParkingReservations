@@ -53,7 +53,8 @@ class WebauthMiddleware implements Middleware
 		// Only useful for debugging users on production.
 		$cookies = $request->getCookieParams();
 		if ($_ENV['APP_ENV'] === "development" 
-			&& isset($cookies['dev-auth-as']) && !empty($cookies['dev-auth-as'])) {
+			&& isset($cookies['dev-auth-as']) && !empty($cookies['dev-auth-as'])
+			&& !isset($_SESSION['user_token'])) {
 			// Simulate authentication using the 'dev-auth-as' cookie
 			$_SESSION['webauth_data']['netid'] = $cookies['dev-auth-as'];
 			$this->getEdsInfo($_SESSION['webauth_data']['netid']);

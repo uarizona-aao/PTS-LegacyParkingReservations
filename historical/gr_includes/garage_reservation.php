@@ -29,7 +29,7 @@ GARAGE_ID	GARAGE_NAME
 // garage reservation keywords: $7.00, $8.00, $10.00, $15.00
 $_SESSION['G_price_pbc_10003']	= 15; // for pbc lot 10003 only (this lot does not have comego)
 
-$_SESSION['G_price_regular']		= 8; // was 7
+$_SESSION['G_price_regular']		= 9; // was 7
 $_SESSION['G_price_comeandgo']	= 9; // was 8
 
 $_SESSION['G_price_second']		= 8; // 2'nd st garage

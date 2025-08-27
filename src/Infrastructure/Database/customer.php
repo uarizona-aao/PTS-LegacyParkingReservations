@@ -1,6 +1,7 @@
 <?php
 namespace App\Infrastructure\Database;
 use App\Application\Responders\CustomerResponder;
+use App\Infrastructure\Database\GrLogin;
 use Slim\Views\Twig;
 use Slim\Factory\AppFactory;
 
@@ -9,7 +10,7 @@ class customer
 	var $error;
 	var $errorMsg;
 
-	var $login;
+	var ?GrLogin $login;
 	var $db;
 
 	var $userid;
@@ -71,10 +72,6 @@ class customer
 		]);
 		echo $response->getBody();
 		exit;
-
-
-		// $cForm = $this->writeCustForm();
-		return 1;
 	}
 
 
@@ -136,6 +133,7 @@ class customer
 		if (!$this->userid)
 		{
 			$this->error = "noUserid";
+			$this->errorMsg = "The system was unable to create your account. Please contact PTS Visitor Programs at (520) 621-3710.";
 			return false;
 		}
 
@@ -145,6 +143,8 @@ class customer
 
 		$this->createDept($_POST['deptno']);
 		if (!$response) return false;
+
+		return true;
 	}
 
 	function deptset($userid)
@@ -197,5 +197,4 @@ class customer
 		$return .= "</p>\n\n";
 		return $return;
 	}
-
 }

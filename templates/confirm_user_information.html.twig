@@ -3,7 +3,14 @@
 {% block content %}
     <p>&nbsp;</p>
 
-<form method="post" action="{{ path }}" onsubmit="return checkCustForm();">
+{% if error is defined and error %}
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ error }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
+
+<form method="post" action="{{ path }}">
     <table class="formbox" align="center">
         <tr>
             <th colspan="2" class="title">
@@ -33,16 +40,12 @@
             <td><input type="text" name="deptno" size="5" maxlength="5" value="{{ newInfo.deptno }}"/></td>
         </tr>
 
-        <tr valign="middle">
-            <td class="req">(Five digits - include leading zeros)</td>
-            <td>&nbsp;</td>
-        </tr>
-
         <tr align="center">
             <td colspan="2" class="submitter">
                 <input type="submit" name="custcreate" value="Continue &gt;&gt;"/>
                 <input type="hidden" name="netid" value="{{ newInfo.netid }}"/>
                 <input type="hidden" name="auth" value="{{ newInfo.auth }}"/>
+                <input type="hidden" name="deptname" value="{{ newInfo.deptname }}"/>
             </td>
         </tr>
     </table>

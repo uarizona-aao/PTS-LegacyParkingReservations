@@ -16,7 +16,7 @@ class GrLogin
 	var $login;
 
 	// construct function for new login
-	function __construct ($Pnetid, $pass, $db_conn)
+	function __construct ($Pnetid, $pass=null, $db_conn=null)
 	{
 		// if db not passed correctly, instantiate it in the object
 

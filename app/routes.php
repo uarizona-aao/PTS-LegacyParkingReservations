@@ -26,7 +26,52 @@ return function (App $app) {
 
     $app->post('/confirm_user_information', function (Request $request, Response $response, $args) {
         // This will be called from the customer.php->custset() function when a new user is created and the form submits here.
-        echo '1'; exit;
+        // invoke customer->validDept() to verify it's valid department number in the POST
+        $postData = $request->getParsedBody();
+        $deptNum = $postData['deptno'] ?? null;
+
+        if(empty($deptNum)) {
+            $data = [
+                'error' => 'Department number is required.',
+                'newInfo' => $postData,
+                'path' => $_ENV['APP_URL'] . '/confirm_user_information'
+            ];
+            $responder = new \App\Application\Responders\CustomerResponder($this->get(Twig::class));
+            return $responder->confirm_user_information($response, $data);
+        }
+
+        // Instantiate the db and customer class to call validDept
+        $db = new \App\Infrastructure\Database\GrLogin('');
+        $customer = new \App\Infrastructure\Database\customer($db);
+        $customer->newInfo = $postData; // Keep it in order for class invocations
+
+        $is_deptnum_valid = $customer->validDept($deptNum);
+        if(!$is_deptnum_valid) {
+            $data = [
+                'error' => 'Invalid department number.',
+                'newInfo' => $postData,
+                'path' => $_ENV['APP_URL'] . '/confirm_user_information'
+            ];
+            $responder = new \App\Application\Responders\CustomerResponder($this->get(Twig::class));
+            return $responder->confirm_user_information($response, $data);
+        }
+
+        // Run createAccount and see if it works, if false, use errorMsg and return to the template
+        $create_result = $customer->createAccount();
+        if($create_result === false) {
+            $data = [
+                'error' => $customer->errorMsg ?? 'There was an error creating your account. Please contact PTS Visitor Programs at (520) 621-3710.',
+                'newInfo' => $postData,
+                'path' => $_ENV['APP_URL'] . '/confirm_user_information'
+            ];
+            var_dump($data);exit;
+            $responder = new \App\Application\Responders\CustomerResponder($this->get(Twig::class));
+            return $responder->confirm_user_information($response, $data);
+        }
+
+        // Appears to have succeeded, return them to the home page.
+        $response = $response->withHeader('Location', $_ENV['APP_URL'] . '/?msg=custcreate')->withStatus(302);
+        return $response;
     })->setName('confirm_user_information');
 
     // Auth-bits for test env; this is not intended to be used outside of your local test environment with Selenium
