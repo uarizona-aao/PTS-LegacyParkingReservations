@@ -64,7 +64,6 @@ return function (App $app) {
                 'newInfo' => $postData,
                 'path' => $_ENV['APP_URL'] . '/confirm_user_information'
             ];
-            var_dump($data);exit;
             $responder = new \App\Application\Responders\CustomerResponder($this->get(Twig::class));
             return $responder->confirm_user_information($response, $data);
         }
