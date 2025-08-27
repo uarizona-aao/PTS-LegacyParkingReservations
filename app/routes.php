@@ -69,6 +69,9 @@ return function (App $app) {
         }
 
         // Appears to have succeeded, return them to the home page.
+        // But first, regenerate $_SESSION['cuinfo'] through a fresh GrLogin instance
+        $login_refresh = new \App\Infrastructure\Database\GrLogin($_SESSION['resuser']['netid']);
+
         $response = $response->withHeader('Location', $_ENV['APP_URL'] . '/?msg=custcreate')->withStatus(302);
         return $response;
     })->setName('confirm_user_information');
