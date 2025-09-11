@@ -9,7 +9,7 @@ use App\Application\Responders\CustomerResponder;
 use App\Infrastructure\Database\reservation;
 use App\Infrastructure\Database\database;
 
-class ViewCustomerAction extends CustomerAction
+class ViewCustomerReservationAction extends CustomerAction
 {
     private CustomerResponder $customerResponder;
 
@@ -43,6 +43,7 @@ class ViewCustomerAction extends CustomerAction
         if ($customer['auth'] < 3) {
             $res->checkResOwner($customer, $tmpAry);
         }
+        $res->conf = $id;
 
         return $this->customerResponder->confirmation($this->response, [
             'reservation' => $res,
