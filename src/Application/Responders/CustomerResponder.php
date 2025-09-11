@@ -36,6 +36,14 @@ class CustomerResponder {
             $data);
     }
 
+    public function edit(Response $response, array $data) {
+        $data['mode'] = 'edit';
+        return $this->view->render(
+            $response, 
+            'customer_create.html.twig', 
+            $data);
+    }
+
     public function confirm_user_information(Response $response, array $data): Response 
     {
         return $this->view->render($response, 'confirm_user_information.html.twig', $data);
