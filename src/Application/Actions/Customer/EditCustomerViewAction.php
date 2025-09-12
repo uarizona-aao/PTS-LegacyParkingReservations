@@ -38,9 +38,12 @@ class CreateCustomerViewAction extends CustomerAction
 class EditCustomerViewAction extends CustomerAction
 {
     private CustomerResponder $customerResponder;
+    private DateValidator $dateValidator;
 
-    public function __construct(CustomerResponder $customerResponder) {
+    public function __construct(
+        CustomerResponder $customerResponder, DateValidator $dateValidator) {
         $this->customerResponder = $customerResponder;
+        $this->dateValidator = $dateValidator;
     }
     
     /**
@@ -57,7 +60,27 @@ class EditCustomerViewAction extends CustomerAction
         $res = new reservation();
         $customer = $_SESSION['cuinfo'];
         $res->getRes($id, true);
+        $customer = $_SESSION['cuinfo'];
+        $redDates = isset($resInfo['RESDATE']) ? $resInfo['RESDATE'] : '';
+        // $defaultDateStr = isset($res->resinfo['RESDATE']) ? explode(',', $res->resinfo['RESDATE'][0])[0] : '';
+        $addDatesStr = isset($res->resinfo['RESDATE']) ? explode(',', $res->resinfo['RESDATE'][0])[0] : '';
 
+        $data = [
+            'receipt' => '', // Content for receipt
+            'error' => '',
+            'mode' => 'create',
+            'customer' => $customer,
+            'reservation' => [],
+            'db_reservation' => [], // this is for $res object if we instantiate it.
+            'redDates' => $redDates,
+            'defaultDateStr' => '', // nothing here.
+            'addDatesStr' => $addDatesStr,
+            'maxDatePicks' => 4,
+            'unselectDateMsg' => "Please unselect the date you wish to change.",
+            'use_default_jquery' => false, // bit for jquery fix.
+            'garageOptions' => [],
+            'dateValidator' => $this->dateValidator
+        ];
         // Various checks from original edit.php
         if (!$res->resinfo) {
             return $this->response->withHeader('Location', '/?msg=resnotfound')
@@ -93,11 +116,12 @@ class EditCustomerViewAction extends CustomerAction
         }
 
         // Handle POST request for edits
+        // TODO: Res is ready, need to compare why the values aren't lining up.
         if ($this->request->getMethod() === 'POST') {
             return $this->handleEditSubmission($res);
         }
 
-        // Setup for edit form display
+        // Setup for edit form display information
         $res->getGuests($id);
         $resInfo = $res->resinfo;
         $resInfo['guestList'] = is_array($res->guestList) ? implode(" | ", $res->guestList) : $res->guestList;
@@ -111,25 +135,30 @@ class EditCustomerViewAction extends CustomerAction
             }
         }
 
-        $data = [
-            'reservation' => $resInfo,
-            'glg' => $glg,
-            'error' => $_GET['error'] ?? null,
-            'db_reservation' => $res,
-            'cancelUri' => '/'
-        ];
+        $data['reservation'] = $resInfo;
+        $data['glg'] = $glg;
+        $data['error'] = $_GET['error'] ?? null;
+        $data['db_reservation'] = $res;
+        $data['cancelUri'] = '/';
+        $data['garageOptions'] = garageOptions(getVal($resInfo, 'GARAGE_ID_FK', 0), "9006,USA,10003");
         return $this->customerResponder->edit($this->response, $data);
     }
 
     private function handleEditSubmission(reservation $res): Response 
     {
+        $id = $this->request->getQueryParams()['id'] ?? null;
+        
+        if (!$id) {
+            return $this->response->withStatus(404);
+        }
+
         $post = $this->request->getParsedBody();
         $edits = [];
         $guests = [];
         $sizeChange = 0;
         
         // Get existing guest info
-        $res->getGuests($res->conf);
+        $res->getGuests($id);
         
         // Process FRS changes
         if ($res->frs != $post['frs']) {
@@ -155,6 +184,7 @@ class EditCustomerViewAction extends CustomerAction
             $edits['GARAGE_ID_FK'] = $post['garage'];
         }
 
+        // PROGRESS SO FAR: EDITS is working. Need to debug the groupGuest handlers.
         // Process guest/group changes
         $glg = $post['groupGuest'] ?? null;
         if ($glg == "group") {
@@ -193,8 +223,7 @@ class EditCustomerViewAction extends CustomerAction
             (isset($guests['add']) && count($guests['add'])) ||
             (isset($guests['edit']) && $guests['edit']) || 
             (isset($guests['sizeedit']) && $guests['sizeedit'])) {
-            
-            $test = $res->editRes([$res->conf], $edits, $guests, $sizeChange);
+            $test = $res->editRes([$id], $edits, $guests, $sizeChange);
             if (!$test && $res->error) {
                 return $this->response->withHeader('Location', "/edit?id={$res->conf}&error={$res->error}")
                                     ->withStatus(302);

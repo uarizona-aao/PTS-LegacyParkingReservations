@@ -173,7 +173,11 @@ function checkFormRes () {
 					$('#multiDateBox').multiDatesPicker({
 						minDate: 1,
 						beforeShowDay: checkRestrictedDates,
-						{{ addDatesStr ? "addDates: [" ~ addDatesStr ~ "]," : '' }}
+						{% if addDatesStr %}
+							addDates: ['{{ addDatesStr|raw }}'],
+						{% else %}
+							addDates: [],
+						{% endif %}
 						{{ defaultDateStr ? "defaultDate: '" ~ defaultDateStr ~ "'," : '' }}
 					});
 				</script>
