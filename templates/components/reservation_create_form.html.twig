@@ -120,7 +120,7 @@ function checkFormRes () {
 </script>
 
 <h2>
-{{ mode == 'create' ? 'Make a Reservation' : "Edit Reservation " + reservation.RESERVATION_ID }}
+{{ mode == 'create' ? 'Make a Reservation' : "Edit Reservation #{db_reservation.resid}" }}
 </h2>
 {% if error is defined and error %}
 <div class="alert alert-danger" role="alert">
@@ -157,7 +157,7 @@ function checkFormRes () {
 			<td class="req">{{ _self.needHelp('resdate') }} Reservation Date(s):</td>
 			<td colspan="3">
 				<div id="multiDateBox" class="box"></div>
-				<input type="hidden" name="dates" value="{{ redDates }}" />
+				<input type="hidden" name="dates" value="{{ redDates is defined ? redDates|join(',') : '' }}" />
 				<script>
 					let restrictedDates = {{ dateValidator.getRestrictedDates()|json_encode|raw }}
 

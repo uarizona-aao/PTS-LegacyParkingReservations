@@ -25,7 +25,7 @@ return function (App $app) {
     // Customer-related pieces
     $app->get('/', GetCustomerViewAction::class);
     $app->map(['GET', 'POST'], '/create', CreateCustomerViewAction::class);
-    // $app->map(['GET', 'POST'], '/edit', EditCustomerViewAction::class);
+    $app->map(['GET', 'POST'], '/edit', EditCustomerViewAction::class);
     $app->get('/view', ViewCustomerReservationAction::class);
 
     $app->post('/confirm_user_information', function (Request $request, Response $response, $args) {

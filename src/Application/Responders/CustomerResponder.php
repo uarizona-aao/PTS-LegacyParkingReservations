@@ -36,7 +36,8 @@ class CustomerResponder {
             $data);
     }
 
-    public function edit(Response $response, array $data) {
+    public function edit(Response $response, array $data): Response 
+    {
         $data['mode'] = 'edit';
         return $this->view->render(
             $response, 
