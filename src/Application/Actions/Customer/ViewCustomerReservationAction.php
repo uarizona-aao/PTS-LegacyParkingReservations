@@ -44,7 +44,6 @@ class ViewCustomerReservationAction extends CustomerAction
             $res->checkResOwner($customer, $tmpAry);
         }
         $res->conf = $id;
-
         return $this->customerResponder->confirmation($this->response, [
             'reservation' => $res,
             'receipt' => isset($_GET['action']) && $_GET['action'] == 'receipt',
@@ -101,7 +100,19 @@ class ViewCustomerReservationAction extends CustomerAction
                   WHERE RESERVATION_ID_FK = :resid 
                   ORDER BY DATE_RECORDED DESC";
         $dbConn->sQuery($query, ['resid' => $resId]);
-        return $dbConn->results !== false ? $dbConn->results : [];
+        $results = $dbConn->results !== false ? $dbConn->results : [];
+
+        // Pivot to associative form for easier use.
+        $transformedResults = [];
+        foreach ($results as $key => $values) {
+            foreach ($values as $index => $value) {
+                if (!isset($transformedResults[$index])) {
+                    $transformedResults[$index] = [];
+                }
+                $transformedResults[$index][$key] = $value;
+            }
+        }
+        return $transformedResults;
     }
 
     private function generateBackUrl(): string 

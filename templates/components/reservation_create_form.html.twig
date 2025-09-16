@@ -145,8 +145,8 @@ function checkFormRes () {
             <td class="req">{{ _self.needHelp('kfs') }} KFS Number:</td>
             <td class="field" colspan="3" width="380">
 				<input type="text" name="frs" size="10" maxlength="7" onBlur="checkFrs(this.value,'{{ customer.userid }}');" value="{{ reservation.FRS_FK is defined ? reservation.FRS_FK : 0 }}"/>
-				<span id="frsCheckSpan" style="display:{{ reservation.FRS_FK is defined ? 'block' : 'inline' }}">
-				{% if  reservation.FRS_FK is defined %}
+				<span id="frsCheckSpan" style="display:{{ reservation.FRS_FK is defined and reservation.FRS_FK is not null ? 'block' : 'inline' }}">
+				{% if  reservation.FRS_FK is defined and reservation.FRS_FK is not null %}
 					KFS is valid
 				{% endif %}
 				</span>

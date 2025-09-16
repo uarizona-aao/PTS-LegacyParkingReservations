@@ -99,8 +99,8 @@
 
                         {% if gg == "group" %}
                             <p>
-                                <b>Group Name:</b> {{ reservation.guestList }} &nbsp; &nbsp; 
-                                <b>Spaces:</b> {{ reservation.groupCount }}
+                                <b>Group Name:</b> {{ reservation.guestList[0] }} &nbsp; &nbsp; 
+                                <b>Spaces:</b> {{ reservation.groupCount[0] }}
                             </p>
                         {% else %}
                             <p><b>Guest List:</b> {{ reservation.guestList|join(' | ') }}</p>
