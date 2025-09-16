@@ -53,7 +53,7 @@
 
                                     {% if can_cancel %}
                                         <button type="button" class="list-group-item" 
-                                                onclick="if(confirm('Click OK to cancel this reservation')){document.form_a.cancelres.value=1; document.form_a.submit();}">
+                                                onclick="if(confirm('Click OK to cancel this reservation')){document.form_a.cancelres.value=1; window.location.href='/cancel?id={{ reservation.conf }}';}">
                                             <img src="images/delete.png" width="16" height="16" alt="" align="absmiddle"/>
                                             &nbsp;Cancel This Reservation
                                         </button>

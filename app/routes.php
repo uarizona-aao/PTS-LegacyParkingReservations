@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Actions\Customer\GetCustomerViewAction;
 use App\Application\Actions\Customer\CreateCustomerViewAction;
 use App\Application\Actions\Customer\EditCustomerViewAction;
+use App\Application\Actions\Customer\CancelCustomerViewAction;
 use App\Application\Actions\Customer\CheckFRSAction;
 use App\Application\Actions\Customer\ViewCustomerReservationAction;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -26,6 +27,7 @@ return function (App $app) {
     $app->get('/', GetCustomerViewAction::class);
     $app->map(['GET', 'POST'], '/create', CreateCustomerViewAction::class);
     $app->map(['GET', 'POST'], '/edit', EditCustomerViewAction::class);
+    $app->map(['GET', 'POST'], '/cancel', CancelCustomerViewAction::class);
     $app->get('/view', ViewCustomerReservationAction::class);
 
     $app->post('/confirm_user_information', function (Request $request, Response $response, $args) {

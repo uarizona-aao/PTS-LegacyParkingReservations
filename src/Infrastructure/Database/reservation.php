@@ -352,10 +352,6 @@ class reservation {
 				$qVars['KFS_SUB_ACCOUNT_FK'] = $KFS_SUB_ACCOUNT_FK;
 				$qVars['KFS_SUB_OBJECT_CODE_FK'] = $KFS_SUB_OBJECT_CODE_FK;
 
-				print "<pre>";
-				var_dump($qVars, $query);
-				exit;
-
 				if(!$dry) {
 					$conf = $dbConn->sSeqInsert($query, "PARKING.GR_RESERVATION_ID", $qVars);
 					$this->conf = $conf;
@@ -1040,8 +1036,8 @@ class reservation {
 
 
 
-	function cancelRes ($resid) {
-		global $dbConn,$customer;
+	function cancelRes ($resid, $custid) {
+		global $dbConn;
 		if (!isset($dbConn)) $dbConn = new database();
 
 		if (!is_array($resid))
@@ -1054,7 +1050,7 @@ class reservation {
 		}
 		// query is safe! see preg_match above.
 		$dbConn->query("UPDATE PARKING.GR_RESERVATION SET ACTIVE=0 WHERE RESERVATION_ID IN (".implode(",",$resid).")");
-		$this->resNote($resid, $customer["userid"], "Cancelled at " . date('Y-m-d H:i:s'));
+		$this->resNote($resid, $custid, "Cancelled at " . date('Y-m-d H:i:s'));
 	}
 
 

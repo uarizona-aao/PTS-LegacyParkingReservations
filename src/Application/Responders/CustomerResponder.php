@@ -70,6 +70,15 @@ class CustomerResponder {
         ]);
     }
 
+    public function cancel(Response $response, array $data): Response 
+    {
+        return $this->view->render(
+            $response, 
+            'customer_cancel.html.twig', 
+            $data
+        );
+    }
+
     public function errorOut ($error,$resdate='',$errormsg='') {
 		$errors = array(
 			'duplicateGuests' => "There were duplicate names found. Check and try again.",
