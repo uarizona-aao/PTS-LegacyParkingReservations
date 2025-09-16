@@ -352,6 +352,10 @@ class reservation {
 				$qVars['KFS_SUB_ACCOUNT_FK'] = $KFS_SUB_ACCOUNT_FK;
 				$qVars['KFS_SUB_OBJECT_CODE_FK'] = $KFS_SUB_OBJECT_CODE_FK;
 
+				print "<pre>";
+				var_dump($qVars, $query);
+				exit;
+
 				if(!$dry) {
 					$conf = $dbConn->sSeqInsert($query, "PARKING.GR_RESERVATION_ID", $qVars);
 					$this->conf = $conf;
@@ -489,7 +493,7 @@ class reservation {
 					if (@$this->KFS_SUB_OBJECT_CODE_FK)
 						$msg3 .= "    (Sub Obj. Code:".$this->KFS_SUB_OBJECT_CODE_FK.")\n";
 					$msg3 .= "\n";
-					$justConNums=implode(", ",$this->resid);
+
 					$confNums = "Confirmation Number(s): ".implode(", ",$this->resid);
 					$msg3 .= "$confNums\n\n";
 					$msg3 .= "$garageLinkTxt1";
@@ -612,7 +616,7 @@ class reservation {
 				$package->DEPARTMENTNAME=$kfsInformation->DEPARTMENTNAME;
 				$package->RESERVATIONDATE=$dates[0];
 				$package->RESERVATIONVISITORCOUNT=$this->groupCount;
-				$package->RESERVATIONNUMBER=$justConNums;
+				$package->RESERVATIONNUMBER = implode(", ", $this->resid);
 				$package->RESERVATIONDATES=implode(", ",$dates);
 				$notifcationRecipiants = $rc->processFlowbirdReservation($package, $dry);
 

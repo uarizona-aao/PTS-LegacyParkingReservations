@@ -184,8 +184,6 @@ function checkFormRes () {
 						beforeShowDay: checkRestrictedDates,
 						{% if addDatesStr %}
 							addDates: ['{{ addDatesStr|raw }}'],
-						{% else %}
-							addDates: [],
 						{% endif %}
 						{{ defaultDateStr ? "defaultDate: '" ~ defaultDateStr ~ "'," : '' }}
 					});
