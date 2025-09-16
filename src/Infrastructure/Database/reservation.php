@@ -783,7 +783,6 @@ class reservation {
 			$sexInsert_c = "EXIT_TIME=TO_DATE(:q_EXIT_TIME,'MM/DD/YY HH:MI AM'),";
 			$qVars["q_EXIT_TIME"] = "01/01/05 $etime";
 		}
-
 		if ($this->error) return false;
 
 		if (isset($guests['GROUP_SIZE']) && $guests['GROUP_SIZE']>25 && $customer['auth']<4)
@@ -792,12 +791,12 @@ class reservation {
 			$this->error = 'groupSize';
 
 		if (isset($guests['add']) && count($guests['add'])) {
-			if (!isset($spaces)) {
+			// if (!isset($spaces)) {
 				if (count($this->groupCount) >1)
 					$spaces = count($this->groupCount);
 				else
 					$spaces = $this->groupCount[0];
-			}
+			// }
 
 			// make sure the department has not reached their max
 			$this->checkResCount($customer, $this->deptno,$this->garageid,$date,$sizeChange);
@@ -806,7 +805,9 @@ class reservation {
 
 		} else {
 			//jody 2008-02-05  Created this elese because was allowing 25+ garage spaces to be inserted.
-
+			print "<pre>";
+			var_dump($resid, $edits, $guests, $sizeChange);
+			exit;
 			// make sure the department has not reached their max
 			$this->checkResCount($customer,$this->deptno,$this->garageid,$date,$sizeChange);
 			// make sure the garage is not maxed
@@ -815,7 +816,7 @@ class reservation {
 
 		if ($this->error)
 			return false;
-
+		echo 3; exit;
 		$query = "UPDATE PARKING.GR_RESERVATION SET $sexInsert_a $sexInsert_b $sexInsert_c";
 		//$editAll = array();
 		$tmpQuery = '';
@@ -862,7 +863,6 @@ class reservation {
 		}
 		return true;
 	}
-
 
 
 	function resNote ($resid, $userid, $note, $sizeChange=0, $cashierNot=0)

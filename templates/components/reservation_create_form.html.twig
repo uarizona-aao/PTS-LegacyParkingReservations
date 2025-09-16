@@ -118,7 +118,12 @@ function checkFormRes () {
 	}
 }
 </script>
-
+{% if kfs_valid is defined and kfs_valid %}
+	<script>
+	// override js/forms.js declaration to bypass a need to check for edits.
+	var frsCheck = true;
+	</script>
+{% endif %}
 <h2>
 {{ mode == 'create' ? 'Make a Reservation' : "Edit Reservation #{db_reservation.resid}" }}
 </h2>
@@ -140,7 +145,11 @@ function checkFormRes () {
             <td class="req">{{ _self.needHelp('kfs') }} KFS Number:</td>
             <td class="field" colspan="3" width="380">
 				<input type="text" name="frs" size="10" maxlength="7" onBlur="checkFrs(this.value,'{{ customer.userid }}');" value="{{ reservation.FRS_FK is defined ? reservation.FRS_FK : 0 }}"/>
-				<span id="frsCheckSpan" style="display:{{ reservation.FRS_FK is defined ? 'none' : 'inline' }}"></span>
+				<span id="frsCheckSpan" style="display:{{ reservation.FRS_FK is defined ? 'block' : 'inline' }}">
+				{% if  reservation.FRS_FK is defined %}
+					KFS is valid
+				{% endif %}
+				</span>
 			</td>
         </tr>
 

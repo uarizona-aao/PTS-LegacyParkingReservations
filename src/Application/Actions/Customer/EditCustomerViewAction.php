@@ -141,6 +141,7 @@ class EditCustomerViewAction extends CustomerAction
         $data['db_reservation'] = $res;
         $data['cancelUri'] = '/';
         $data['garageOptions'] = garageOptions(getVal($resInfo, 'GARAGE_ID_FK', 0), "9006,USA,10003");
+        $data['kfs_valid'] = true;
         return $this->customerResponder->edit($this->response, $data);
     }
 
@@ -252,9 +253,9 @@ class EditCustomerViewAction extends CustomerAction
                 $guests['sizeorig'] = $res->groupCount[0];
                 $sizeChange = intval($post['spaces']) - $res->groupCount[0];
             }
-            if ($res->addguests != $post['gaddGuests']) {
-                $edits['GUESTS_OFFCAMPUS'] = $post['gaddGuests'];
-            }
+            // if ($res->addguests != $post['gaddGuests']) {
+            //     $edits['GUESTS_OFFCAMPUS'] = $post['gaddGuests'];
+            // }
         }
     }
 
