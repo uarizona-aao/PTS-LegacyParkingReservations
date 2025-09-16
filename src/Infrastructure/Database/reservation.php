@@ -734,6 +734,8 @@ class reservation {
 	function editRes ($resid,$edits,$guests=false,$sizeChange=0)
 	{
 		global $dbConn,$customer;
+		$customer = $_SESSION['cuinfo'];
+		// print "<pre>";var_dump($resid,$edits,$guests,$sizeChange);print "</pre>"; exit;
 		if (!isset($dbConn)) $dbConn = new database();
 
 		$qVars = array();
@@ -805,18 +807,18 @@ class reservation {
 
 		} else {
 			//jody 2008-02-05  Created this elese because was allowing 25+ garage spaces to be inserted.
-			print "<pre>";
-			var_dump($resid, $edits, $guests, $sizeChange);
-			exit;
+
 			// make sure the department has not reached their max
 			$this->checkResCount($customer,$this->deptno,$this->garageid,$date,$sizeChange);
 			// make sure the garage is not maxed
-			$this->checkGarageMax($this->garageid,$date,$spaces);
+			$this->checkGarageMax($this->garageid,$date,$sizeChange);
 		}
 
 		if ($this->error)
 			return false;
-		echo 3; exit;
+
+		// All good; run update functions.
+		$this->conf = $resid[0]; // needed for notes
 		$query = "UPDATE PARKING.GR_RESERVATION SET $sexInsert_a $sexInsert_b $sexInsert_c";
 		//$editAll = array();
 		$tmpQuery = '';
@@ -850,7 +852,7 @@ class reservation {
 			$dbConn->sQuery($query, $qVars);
 			$this->resNote($resid, $customer["userid"], "Edited ".implode(",",array_keys($edits)));
 		}
-		if ($guests) {
+		if ($guests !== false && is_array($guests)) {
 			foreach ($guests as $action=>$guest) {
 				if ($action=="add") {
 					$this->addGuest($resid, $guest, $guests["GROUP_SIZE"], 1, $sizeChange);
@@ -987,9 +989,8 @@ class reservation {
 
 
 	function editGroup ($guests,$sizeChange) {
-		global $dbConn,$customer;
+		global $dbConn;
 		if (!isset($dbConn)) $dbConn = new database();
-		$note = '';
 
 		// make sure digits or spaces only
 		if (!preg_match('/^[\d ]*$/', $this->conf)) {
@@ -1018,9 +1019,6 @@ class reservation {
  			$qVars = array('sizeedit' => $guests['sizeedit'], 'resid' => $this->conf);
 			$dbConn->sQuery($query, $qVars);
 		}
-
-		//  2/5/2008 - Removed this because resNote was being calld somewhere else, and this caused an error because field DATE_RECORDED can't have same time / id.
-		//if ($note) $this->resNote($this->conf,$customer['userid'],$note,$sizeChange,1);
 	}
 
 

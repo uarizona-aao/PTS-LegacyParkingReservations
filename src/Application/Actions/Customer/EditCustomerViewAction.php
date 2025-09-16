@@ -60,7 +60,7 @@ class EditCustomerViewAction extends CustomerAction
         $res = new reservation();
         $customer = $_SESSION['cuinfo'];
         $res->getRes($id, true);
-        $customer = $_SESSION['cuinfo'];
+        $customer = $_SESSION['cuinfo']; // yes, this is necessary. The code is that old and bad. And time does not exist for a proper fix.
         $redDates = isset($resInfo['RESDATE']) ? $resInfo['RESDATE'] : '';
         // $defaultDateStr = isset($res->resinfo['RESDATE']) ? explode(',', $res->resinfo['RESDATE'][0])[0] : '';
         $addDatesStr = isset($res->resinfo['RESDATE']) ? explode(',', $res->resinfo['RESDATE'][0])[0] : '';
@@ -127,6 +127,10 @@ class EditCustomerViewAction extends CustomerAction
         $resInfo['guestList'] = is_array($res->guestList) ? implode(" | ", $res->guestList) : $res->guestList;
         $resInfo['groupCount'] = $res->groupCount[0];
         $glg = (isset($res->groupCount[0]) && $res->groupCount[0] > 1) ? "group" : "guest";
+        if($glg == "group") {
+            $data['groupName'] = $resInfo['guestList'];
+            $data['groupSize'] = $res->groupCount[0];
+        }
         
         // To patch resInfo, have all keys => [single_value] be just key => value if it is an array
         foreach ($resInfo as $key => $value) {
