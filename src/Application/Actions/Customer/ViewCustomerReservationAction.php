@@ -127,6 +127,13 @@ class ViewCustomerReservationAction extends CustomerAction
                 $queryString[] = $param . '=' . urlencode($_GET[$param]);
             }
         }
-        return '/' . ($queryString ? '?' . implode('&', $queryString) : '');
+
+        // If APP_URL is not loaded, load it from env.
+        if (!isset($_ENV['APP_URL'])) {
+            $dotenv = \Dotenv\Dotenv::createImmutable(__DIR__ . '/../../../');
+            $dotenv->load();
+        }
+
+        return $_ENV['APP_URL'] . '/' . ($queryString ? '?' . implode('&', $queryString) : '');
     }
 }

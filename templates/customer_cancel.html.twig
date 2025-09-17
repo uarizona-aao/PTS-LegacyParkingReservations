@@ -13,10 +13,10 @@
             <div class="card-body">
                 <p>Are you sure you want to cancel this reservation?</p>
                 
-                <form method="POST" action="/cancel?id={{ id }}">
+                <form method="POST" action="{{base_url}}/cancel?id={{ id }}">
                     <div class="text-center mt-4">
                         <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
-                        <a href="/view?id={{ id }}" class="btn btn-secondary ml-2">Go Back</a>
+                        <a href="{{base_url}}/view?id={{ id }}" class="btn btn-secondary ml-2">Go Back</a>
                     </div>
                 </form>
             </div>

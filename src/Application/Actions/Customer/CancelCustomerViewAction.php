@@ -19,6 +19,7 @@ class CancelCustomerViewAction extends CustomerAction
 
     protected function action(): Response
     {
+        $base_url = $_ENV['APP_URL'] ?? '';
         $id = $this->request->getQueryParams()['id'] ?? null;
         
         if (!$id) {
@@ -37,16 +38,16 @@ class CancelCustomerViewAction extends CustomerAction
             if (!count($testOwner['fail']) && count($testOwner['pass'])) {
                 // Check if biomedical garage
                 if (preg_match('/bio.?med/si', $resObj->garageName)) {
-                    return $this->response->withHeader('Location', '/?msg=nopbc')
+                    return $this->response->withHeader('Location', "$base_url/?msg=nopbc")
                                         ->withStatus(302);
                 }
                 
                 $resObj->cancelRes($testOwner['pass'], $customer['userid']);
-                return $this->response->withHeader('Location', '/?msg=multicancel')
+                return $this->response->withHeader('Location', "$base_url/?msg=multicancel")
                                     ->withStatus(302);
             }
             
-            return $this->response->withHeader('Location', '/?msg=notallowed')
+            return $this->response->withHeader('Location', "$base_url/?msg=notallowed")
                                 ->withStatus(302);
         }
 

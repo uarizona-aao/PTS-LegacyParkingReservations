@@ -132,6 +132,9 @@ function checkFormRes () {
 	{{ error }}
 </div>
 {% endif %}
+
+<a href="{{base_url}}"><< Home</a>
+<br>
 <div class="resBox">
 <form name="resForm" method="POST" action="?id={{ res_id }}" onSubmit="return checkFormRes();">
     <p class="title">General Info:</p>

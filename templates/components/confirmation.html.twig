@@ -39,7 +39,7 @@
                                 <span style="padding:0 7px; font-style:italic;" class="list-group-item active">Actions</span>
                                 {% if reservation.garageName != 'South Stadium Garage' and reservation.garageName != 'Highland Avenue Garage' %}
                                     <button type="button" class="list-group-item" 
-                                            onClick="window.location.href='/edit?id={{ reservation.conf }}';">
+                                            onClick="window.location.href='{{base_url}}/edit?id={{ reservation.conf }}';">
                                         <img src="images/edit.gif" width="16" height="16" alt="" align="absmiddle"/>
                                         &nbsp;Edit This Reservation{{ dateStr }}
                                     </button>
@@ -53,7 +53,7 @@
 
                                     {% if can_cancel %}
                                         <button type="button" class="list-group-item" 
-                                                onclick="if(confirm('Click OK to cancel this reservation')){document.form_a.cancelres.value=1; window.location.href='/cancel?id={{ reservation.conf }}';}">
+                                                onclick="if(confirm('Click OK to cancel this reservation')){document.form_a.cancelres.value=1; window.location.href='{{base_url}}/cancel?id={{ reservation.conf }}';}">
                                             <img src="images/delete.png" width="16" height="16" alt="" align="absmiddle"/>
                                             &nbsp;Cancel This Reservation
                                         </button>
@@ -124,8 +124,8 @@
                     {% if receipt %}
                         <p align="center">
                             <b>
-                                <a href="/create">Make Another Reservation</a> &nbsp; :: &nbsp; 
-                                <a href="/">Home</a>
+                                <a href="{{base_url}}/create">Make Another Reservation</a> &nbsp; :: &nbsp; 
+                                <a href="{{base_url}}/">Home</a>
                             </b>
                         </p>
                     {% else %}
