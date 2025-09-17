@@ -20,6 +20,7 @@ class ViewCustomerReservationAction extends CustomerAction
 
     protected function action(): Response
     {
+        $base_url = $_ENV['APP_URL'] ?? '';
         $id = $this->request->getQueryParams()['id'] ?? null;
         
         if (!$id) {
@@ -31,7 +32,7 @@ class ViewCustomerReservationAction extends CustomerAction
         $res->getRes($id);
 
         if (!$res->resinfo) {
-            return $this->response->withHeader('Location', '/?msg=resnotfound')
+            return $this->response->withHeader('Location', "$base_url/?msg=resnotfound")
                                 ->withStatus(302);
         }
 
@@ -81,12 +82,13 @@ class ViewCustomerReservationAction extends CustomerAction
 
     private function formatGarageText($garageName): string 
     {
+        $base_url = $_ENV['APP_URL'] ?? '';
         if (preg_match('/(BioMedical)/i', $garageName)) {
             $pbc_lot_num = preg_match('/(10003)/i', $garageName) ? '10003' : '10002';
             $pbc_lot_loc = ($pbc_lot_num == '10003') 
                 ? "Lot 10003, Located at 550 E Van Buren, 85004" 
                 : "Lot 10002, Located at 714 E Van Buren, 85004";
-            return "Phoenix BioMedical Campus <a href='https://parking.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf' target='_blank'>{$pbc_lot_loc}</a>";
+            return "Phoenix BioMedical Campus <a href='{$base_url}/pdf/maps/phoenixmedicalcenterlot.pdf' target='_blank'>{$pbc_lot_loc}</a>";
         }
         return $garageName;
     }

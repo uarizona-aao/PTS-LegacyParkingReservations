@@ -33,6 +33,7 @@ class CreateCustomerViewAction extends CustomerAction
         include_once __DIR__.'/../../../form_functions.php';
         $customer = $_SESSION['cuinfo'];
         $userid   = $customer['userid'];
+        $base_url = $_ENV['APP_URL'] ?? '';
         $redDates = isset($resInfo['RESDATE']) ? $resInfo['RESDATE'] : '';
         $defaultDateStr = $redDates ? explode(',', $redDates)[0] : '';
         $addDatesStr = $redDates ? implode(',', array_map(fn($date) => "'$date'", explode(',', $redDates))) : '';

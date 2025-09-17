@@ -23,7 +23,7 @@ class CancelCustomerViewAction extends CustomerAction
         $id = $this->request->getQueryParams()['id'] ?? null;
         
         if (!$id) {
-            return $this->response->withHeader('Location', '/?msg=noselect')
+            return $this->response->withHeader('Location', "$base_url/?msg=noselect")
                                 ->withStatus(302);
         }
 
