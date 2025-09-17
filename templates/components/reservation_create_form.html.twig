@@ -118,9 +118,14 @@ function checkFormRes () {
 	}
 }
 </script>
-
+{% if kfs_valid is defined and kfs_valid %}
+	<script>
+	// override js/forms.js declaration to bypass a need to check for edits.
+	var frsCheck = true;
+	</script>
+{% endif %}
 <h2>
-{{ mode == 'create' ? 'Make a Reservation' : "Edit Reservation " + reservation.RESERVATION_ID }}
+{{ mode == 'create' ? 'Make a Reservation' : "Edit Reservation #{db_reservation.resid}" }}
 </h2>
 {% if error is defined and error %}
 <div class="alert alert-danger" role="alert">
@@ -140,7 +145,11 @@ function checkFormRes () {
             <td class="req">{{ _self.needHelp('kfs') }} KFS Number:</td>
             <td class="field" colspan="3" width="380">
 				<input type="text" name="frs" size="10" maxlength="7" onBlur="checkFrs(this.value,'{{ customer.userid }}');" value="{{ reservation.FRS_FK is defined ? reservation.FRS_FK : 0 }}"/>
-				<span id="frsCheckSpan" style="display:{{ reservation.FRS_FK is defined ? 'none' : 'inline' }}"></span>
+				<span id="frsCheckSpan" style="display:{{ reservation.FRS_FK is defined and reservation.FRS_FK is not null ? 'block' : 'inline' }}">
+				{% if  reservation.FRS_FK is defined and reservation.FRS_FK is not null %}
+					KFS is valid
+				{% endif %}
+				</span>
 			</td>
         </tr>
 
@@ -157,7 +166,7 @@ function checkFormRes () {
 			<td class="req">{{ _self.needHelp('resdate') }} Reservation Date(s):</td>
 			<td colspan="3">
 				<div id="multiDateBox" class="box"></div>
-				<input type="hidden" name="dates" value="{{ redDates }}" />
+				<input type="hidden" name="dates" value="{{ redDates is defined ? redDates|join(',') : '' }}" />
 				<script>
 					let restrictedDates = {{ dateValidator.getRestrictedDates()|json_encode|raw }}
 
@@ -173,7 +182,9 @@ function checkFormRes () {
 					$('#multiDateBox').multiDatesPicker({
 						minDate: 1,
 						beforeShowDay: checkRestrictedDates,
-						{{ addDatesStr ? "addDates: [" ~ addDatesStr ~ "]," : '' }}
+						{% if addDatesStr %}
+							addDates: ['{{ addDatesStr|raw }}'],
+						{% endif %}
 						{{ defaultDateStr ? "defaultDate: '" ~ defaultDateStr ~ "'," : '' }}
 					});
 				</script>

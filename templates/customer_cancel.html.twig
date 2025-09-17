@@ -1,0 +1,26 @@
+{% extends 'components/base_layout.html.twig' %}
+
+{% block content %}
+<div class="container">
+    <h2>Cancel Reservation</h2>
+
+    {% if not can_cancel %}
+        <div class="alert alert-warning">
+            Error: You cannot cancel this reservation. Please contact PTS Visitor Programs during normal business hours.
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body">
+                <p>Are you sure you want to cancel this reservation?</p>
+                
+                <form method="POST" action="/cancel?id={{ id }}">
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-danger">Confirm Cancellation</button>
+                        <a href="/view?id={{ id }}" class="btn btn-secondary ml-2">Go Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

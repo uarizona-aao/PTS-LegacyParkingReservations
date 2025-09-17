@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Application\Settings\SettingsInterface;
 use App\Application\Responders\CustomerResponder;
 use App\Application\Services\DateValidator;
+use App\Application\Actions\Customer\ViewCustomerReservationAction;
 use Slim\Views\Twig;
 use Twig\Loader\FilesystemLoader;
 use DI\ContainerBuilder;
@@ -38,5 +39,6 @@ return function (ContainerBuilder $containerBuilder) {
             return new CustomerResponder($c->get(Twig::class));
         },
         DateValidator::class => \DI\autowire(),
+        ViewCustomerReservationAction::class => \DI\autowire(),
     ]);
 };

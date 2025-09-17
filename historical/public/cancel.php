@@ -55,10 +55,10 @@ if ($auth >= 2)
 
 		// If editing PBC, have them call offoce. (see also view.php and cancel.php and edit.php)
 		if (preg_match('/bio.?med/si', $resObj->resinfo['GARAGE_NAME'][0])) {
-			locationHref('/parking/garage-reservation/index.php?msg=nopbc');
+			locationHref('/index.php?msg=nopbc');
 		} else {
 			$resObj->cancelRes($testOwner['pass']);
-			locationHref('/parking/garage-reservation/index.php?msg=multicancel');
+			locationHref('/index.php?msg=multicancel');
 		}
 	}
 

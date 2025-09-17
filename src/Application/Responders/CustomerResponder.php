@@ -36,6 +36,15 @@ class CustomerResponder {
             $data);
     }
 
+    public function edit(Response $response, array $data): Response 
+    {
+        $data['mode'] = 'edit';
+        return $this->view->render(
+            $response, 
+            'customer_create.html.twig', 
+            $data);
+    }
+
     public function confirm_user_information(Response $response, array $data): Response 
     {
         return $this->view->render($response, 'confirm_user_information.html.twig', $data);
@@ -59,6 +68,15 @@ class CustomerResponder {
             'path' => $data['path'] ?? $_SERVER['PHP_SELF'],
             'is_dry_run' => $data['is_dry_run'] ?? false, // Add dry run flag
         ]);
+    }
+
+    public function cancel(Response $response, array $data): Response 
+    {
+        return $this->view->render(
+            $response, 
+            'customer_cancel.html.twig', 
+            $data
+        );
     }
 
     public function errorOut ($error,$resdate='',$errormsg='') {

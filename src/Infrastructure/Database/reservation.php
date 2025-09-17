@@ -489,7 +489,7 @@ class reservation {
 					if (@$this->KFS_SUB_OBJECT_CODE_FK)
 						$msg3 .= "    (Sub Obj. Code:".$this->KFS_SUB_OBJECT_CODE_FK.")\n";
 					$msg3 .= "\n";
-					$justConNums=implode(", ",$this->resid);
+
 					$confNums = "Confirmation Number(s): ".implode(", ",$this->resid);
 					$msg3 .= "$confNums\n\n";
 					$msg3 .= "$garageLinkTxt1";
@@ -612,7 +612,7 @@ class reservation {
 				$package->DEPARTMENTNAME=$kfsInformation->DEPARTMENTNAME;
 				$package->RESERVATIONDATE=$dates[0];
 				$package->RESERVATIONVISITORCOUNT=$this->groupCount;
-				$package->RESERVATIONNUMBER=$justConNums;
+				$package->RESERVATIONNUMBER = implode(", ", $this->resid);
 				$package->RESERVATIONDATES=implode(", ",$dates);
 				$notifcationRecipiants = $rc->processFlowbirdReservation($package, $dry);
 
@@ -734,6 +734,8 @@ class reservation {
 	function editRes ($resid,$edits,$guests=false,$sizeChange=0)
 	{
 		global $dbConn,$customer;
+		$customer = $_SESSION['cuinfo'];
+		// print "<pre>";var_dump($resid,$edits,$guests,$sizeChange);print "</pre>"; exit;
 		if (!isset($dbConn)) $dbConn = new database();
 
 		$qVars = array();
@@ -783,7 +785,6 @@ class reservation {
 			$sexInsert_c = "EXIT_TIME=TO_DATE(:q_EXIT_TIME,'MM/DD/YY HH:MI AM'),";
 			$qVars["q_EXIT_TIME"] = "01/01/05 $etime";
 		}
-
 		if ($this->error) return false;
 
 		if (isset($guests['GROUP_SIZE']) && $guests['GROUP_SIZE']>25 && $customer['auth']<4)
@@ -792,12 +793,12 @@ class reservation {
 			$this->error = 'groupSize';
 
 		if (isset($guests['add']) && count($guests['add'])) {
-			if (!isset($spaces)) {
+			// if (!isset($spaces)) {
 				if (count($this->groupCount) >1)
 					$spaces = count($this->groupCount);
 				else
 					$spaces = $this->groupCount[0];
-			}
+			// }
 
 			// make sure the department has not reached their max
 			$this->checkResCount($customer, $this->deptno,$this->garageid,$date,$sizeChange);
@@ -810,12 +811,14 @@ class reservation {
 			// make sure the department has not reached their max
 			$this->checkResCount($customer,$this->deptno,$this->garageid,$date,$sizeChange);
 			// make sure the garage is not maxed
-			$this->checkGarageMax($this->garageid,$date,$spaces);
+			$this->checkGarageMax($this->garageid,$date,$sizeChange);
 		}
 
 		if ($this->error)
 			return false;
 
+		// All good; run update functions.
+		$this->conf = $resid[0]; // needed for notes
 		$query = "UPDATE PARKING.GR_RESERVATION SET $sexInsert_a $sexInsert_b $sexInsert_c";
 		//$editAll = array();
 		$tmpQuery = '';
@@ -849,7 +852,7 @@ class reservation {
 			$dbConn->sQuery($query, $qVars);
 			$this->resNote($resid, $customer["userid"], "Edited ".implode(",",array_keys($edits)));
 		}
-		if ($guests) {
+		if ($guests !== false && is_array($guests)) {
 			foreach ($guests as $action=>$guest) {
 				if ($action=="add") {
 					$this->addGuest($resid, $guest, $guests["GROUP_SIZE"], 1, $sizeChange);
@@ -862,7 +865,6 @@ class reservation {
 		}
 		return true;
 	}
-
 
 
 	function resNote ($resid, $userid, $note, $sizeChange=0, $cashierNot=0)
@@ -987,9 +989,8 @@ class reservation {
 
 
 	function editGroup ($guests,$sizeChange) {
-		global $dbConn,$customer;
+		global $dbConn;
 		if (!isset($dbConn)) $dbConn = new database();
-		$note = '';
 
 		// make sure digits or spaces only
 		if (!preg_match('/^[\d ]*$/', $this->conf)) {
@@ -1018,9 +1019,6 @@ class reservation {
  			$qVars = array('sizeedit' => $guests['sizeedit'], 'resid' => $this->conf);
 			$dbConn->sQuery($query, $qVars);
 		}
-
-		//  2/5/2008 - Removed this because resNote was being calld somewhere else, and this caused an error because field DATE_RECORDED can't have same time / id.
-		//if ($note) $this->resNote($this->conf,$customer['userid'],$note,$sizeChange,1);
 	}
 
 
@@ -1038,8 +1036,8 @@ class reservation {
 
 
 
-	function cancelRes ($resid) {
-		global $dbConn,$customer;
+	function cancelRes ($resid, $custid) {
+		global $dbConn;
 		if (!isset($dbConn)) $dbConn = new database();
 
 		if (!is_array($resid))
@@ -1052,7 +1050,7 @@ class reservation {
 		}
 		// query is safe! see preg_match above.
 		$dbConn->query("UPDATE PARKING.GR_RESERVATION SET ACTIVE=0 WHERE RESERVATION_ID IN (".implode(",",$resid).")");
-		$this->resNote($resid, $customer["userid"], "Cancelled at " . date('Y-m-d H:i:s'));
+		$this->resNote($resid, $custid, "Cancelled at " . date('Y-m-d H:i:s'));
 	}
 
 
