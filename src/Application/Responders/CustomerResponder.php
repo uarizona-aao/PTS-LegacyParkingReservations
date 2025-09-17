@@ -2,17 +2,23 @@
 namespace App\Application\Responders;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Views\Twig;
+use Dotenv\Dotenv;
 
 class CustomerResponder {
     protected $view;
     public $phone = '520-626-7275';
+    public $base_url = '';
 
     public function __construct(Twig $view)
     {
         $this->view = $view;
         $view->getEnvironment()->addGlobal('user', $_SESSION['eds_data'] ?? null);
         $view->getEnvironment()->addGlobal('post', $_POST ?? null);
-        $view->getEnvironment()->addGlobal('get', $_GET);
+        if (!isset($_ENV['APP_URL'])) {
+            $dotenv = Dotenv::createImmutable(__DIR__ . '/../../../');
+            $dotenv->load();
+        }
+        $view->getEnvironment()->addGlobal('base_url', $_ENV['APP_URL'] ?? '');
     }
 
     public function index(Response $response, array $data) {
