@@ -420,6 +420,7 @@ class database
 
 		$check = $this->sQuery($query, $vars);
 		$getQuery = "SELECT $pk.CURRVAL AS SEQVAL FROM DUAL";
+		error_log($query);
 		$check = $this->query($getQuery);
 		if ($check && $this->rows)
 			return $this->results['SEQVAL'][0];

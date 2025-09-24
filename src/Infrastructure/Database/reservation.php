@@ -455,8 +455,8 @@ class reservation {
 						$pbc_lot_loc = ($pbc_lot_num=='10003') ? "Lot 10003,\nLocated at 550 E Van Buren, 85004" : "Lot 10002,\nLocated at 714 E Van Buren, 85004";
 						// Use 'Phoenix BioMedical Campus' because don't want "Phoenix BioMedical 10003"
 						$garageTxt = 'Phoenix BioMedical Campus ' . $pbc_lot_loc;
-						$garageLinkTxt1 = "To view a map of Phoenix BioMedical parking lots, please visit our web site:\nhttps://pciapps1.ba.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
-						$garageLinkTxt2 =         "apps.ba.arizona.edu/garage-reservation/images/maps/phoenixmedicalcenterlot.pdf";
+						$garageLinkTxt1 = "To view a map of Phoenix BioMedical parking lots, please visit our web site:\nhttps://pciapps1.ba.arizona.edu/garage_reservation/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
+						$garageLinkTxt2 =         "pciapps1.ba.arizona.edu/garage_reservation/images/maps/phoenixmedicalcenterlot.pdf";
 					}
 
 					$note = "Created";
@@ -562,7 +562,7 @@ class reservation {
 						$pdf->Output("$publicPath/$pdfConfirmFile", 'F');
 
 						// Add the PDF link to the email message
-						$msg2 = "You can print your [PDF] confirmation here: \nhttps://pciapps1.ba.arizona.edu/garage-reservation/resPDF/$pdfConfirmFile\n\n";
+						$msg2 = "You can print your [PDF] confirmation here: \nhttps://pciapps1.ba.arizona.edu/garage_reservation/resPDF/$pdfConfirmFile\n\n";
 					} 
 				}
 				
@@ -1362,7 +1362,7 @@ class reservation {
 	
 		if (preg_match('/(BioMedical)/i', $garageTxt)) {
 			$instructions .= "To view a map of Phoenix BioMedical parking lots, please visit our web site:\n";
-			$instructions .= "https://pciapps1.ba.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
+			$instructions .= "https://pciapps1.ba.arizona.edu/garage_reservation/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
 		}
 	
 		return $instructions;
