@@ -8,6 +8,7 @@ use App\Application\Actions\Customer\EditCustomerViewAction;
 use App\Application\Actions\Customer\CancelCustomerViewAction;
 use App\Application\Actions\Customer\CheckFRSAction;
 use App\Application\Actions\Customer\ViewCustomerReservationAction;
+use App\Application\Services\BoxService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
@@ -92,6 +93,51 @@ return function (App $app) {
 
     // TODO help route if we can find gr_help.php?
     $app->get('/frscheck', CheckFRSAction::class);
+
+    // Box-related route:
+    $app->get('/pass_pdf/{pdf_id}', function($request, $response) {
+        // using $pdf_id and BoxHelper, check if a pdf exists; if so, return it as a download.
+        $pdf_id = $request->getAttribute('pdf_id');
+        if(empty($pdf_id) || !is_numeric($pdf_id)) {
+            $response->getBody()->write("Invalid PDF ID.");
+            return $response->withStatus(400);
+        }
+
+        $box = new BoxService($_ENV['BOX_API_JWT']);
+        try {
+            // temporary override pdf_id
+            $pdf_id = "2009200402964";
+            // Save to public/pdf
+            $save_path = __DIR__ . "/../public/resPDF/dash_pass_{$pdf_id}.pdf";
+            $file = $box->downloadFile($pdf_id, $save_path);
+            if($file) {
+                // Serve the file as a download
+                if (file_exists($save_path)) {
+                    // Get file contents
+                    $fileStream = fopen($save_path, 'rb');
+                    
+                    // Create new stream for response
+                    $stream = new \Slim\Psr7\Stream($fileStream);
+                    
+                    return $response
+                        ->withHeader('Content-Type', 'application/pdf')
+                        ->withHeader('Content-Disposition', 'inline; filename="dash_pass_' . $pdf_id . '.pdf"')
+                        ->withHeader('Content-Length', filesize($save_path))
+                        ->withBody($stream);
+                } else {
+                    $response->getBody()->write("File not found on server after download.");
+                    return $response->withStatus(500);
+                }
+            } else {
+                throw new Exception("PDF failed to load from storage. Possibly invalid ID or permission issue.");
+            }
+
+        } catch (Exception $e) {
+            $response->getBody()->write("Error accessing your PDF: " . $e->getMessage());
+            return $response->withStatus(500);
+        }
+
+    });
 
     // // api route
     // $app->post('/new_res', function (Request $request, Response $response) {
