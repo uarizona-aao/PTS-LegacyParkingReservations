@@ -40,6 +40,10 @@ class WebauthMiddleware implements Middleware
 		if ($_ENV['APP_ENV'] === 'development' && $request->getUri()->getPath() === '/selenium-cookie') {
 			return $handler->handle($request);
 		}
+		// If any calls are made to dash_pass_pdf, bypass these checks.
+		if (preg_match('#^/dash_pass_pdf(/[^/]+)?$#', $request->getUri()->getPath())) {
+			return $handler->handle($request);
+		}
 
         $_SESSION['webauth_data'] = [];
         $webAuthBaseURL = "https://webauth.arizona.edu/webauth";

@@ -124,25 +124,11 @@ return function (App $app) {
             $save_path = __DIR__ . "/../public/resPDF/$file_name_from_cloud";
             $file = $box->downloadFile($pdf_id, $save_path);
             if($file) {
-                // Serve the file as a download
-                if (file_exists($save_path)) {
-                    // Get file contents
-                    $fileStream = fopen($save_path, 'rb');
-                    
-                    // Create new stream for response
-                    $stream = new \Slim\Psr7\Stream($fileStream);
-                    
-                    return $response
-                        ->withHeader('Content-Type', 'application/pdf')
-                        ->withHeader('Content-Disposition', 'inline; filename="dash_pass_' . $pdf_id . '.pdf"')
-                        ->withHeader('Content-Length', filesize($save_path))
-                        ->withBody($stream);
-                } else {
-                    $response->getBody()->write("File not found on server after download.");
-                    return $response->withStatus(500);
-                }
+                $response->getBody()->write("File successfully pulled from cloud.");
+                return $response->withStatus(200);
             } else {
-                throw new Exception("PDF failed to load from storage. Possibly invalid ID or permission issue.");
+                $response->getBody()->write("File not found.");
+                return $response->withStatus(404);
             }
 
         } catch (Exception $e) {
