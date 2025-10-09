@@ -635,9 +635,13 @@ class database
 			echo $errMsg;
 
 		$outFname = dirname(__FILE__).'/database_error_log.htm';
-		$OUT_FILE = fopen($outFname, 'a');
-		fwrite($OUT_FILE, $errMsg);
-		fclose($OUT_FILE);
+		try {
+			$OUT_FILE = fopen($outFname, 'a');
+			fwrite($OUT_FILE, $errMsg);
+			fclose($OUT_FILE);
+		} catch (\Exception $e) {
+			// do nothing
+		}
 
 		$errMsg = preg_replace('/&nbsp;/', ' ', strip_tags($errMsg));
 

@@ -96,6 +96,17 @@ return function (App $app) {
 
     // Box-related route:
     $app->get('/dash_pass_pdf/{pdf_id}', function($request, $response) {
+        // X-Route-Key check to control who calls this.
+        $auth = $request->getHeader('X-Route-Key');
+        if (empty($auth) || $auth[0] !== $_ENV['BOX_ROUTE_KEY']) {
+	    $response->getBody()->write(json_encode([
+                'error' => 'Unauthorized'
+            ]));
+            return $response
+                ->withStatus(401)
+                ->withHeader('Content-Type', 'application/json');
+        }
+        
         // using $pdf_id and BoxHelper, check if a pdf exists; if so, return it as a download.
         $pdf_id = $request->getAttribute('pdf_id');
         if(empty($pdf_id) || !is_numeric($pdf_id)) {
