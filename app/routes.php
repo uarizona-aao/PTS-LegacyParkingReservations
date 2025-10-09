@@ -95,7 +95,7 @@ return function (App $app) {
     $app->get('/frscheck', CheckFRSAction::class);
 
     // Box-related route:
-    $app->get('/pass_pdf/{pdf_id}', function($request, $response) {
+    $app->get('/dash_pass_pdf/{pdf_id}', function($request, $response) {
         // using $pdf_id and BoxHelper, check if a pdf exists; if so, return it as a download.
         $pdf_id = $request->getAttribute('pdf_id');
         if(empty($pdf_id) || !is_numeric($pdf_id)) {
@@ -105,10 +105,12 @@ return function (App $app) {
 
         $box = new BoxService($_ENV['BOX_API_JWT']);
         try {
-            // temporary override pdf_id
-            $pdf_id = "2009200402964";
-            // Save to public/pdf
-            $save_path = __DIR__ . "/../public/resPDF/dash_pass_{$pdf_id}.pdf";
+            // Save it in respdf; the different name will indicate an admin panel generation
+            $file_information = $box->getFileInformation($pdf_id);
+            // Found, run file name
+            $file_name_from_cloud = $file_information['name'];
+
+            $save_path = __DIR__ . "/../public/resPDF/$file_name_from_cloud";
             $file = $box->downloadFile($pdf_id, $save_path);
             if($file) {
                 // Serve the file as a download

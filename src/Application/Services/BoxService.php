@@ -39,7 +39,7 @@ class BoxService {
         curl_close($ch);
     
         if ($httpCode >= 400) {
-            throw new Exception('API error: ' . $response);
+            throw new \Exception('API error: ' . $response);
         }   
     
         return json_decode($response, true);
@@ -58,6 +58,10 @@ class BoxService {
 
     public function getFolderInformation($id) {
         return $this->makeCurlRequest("/folders/$id/");
+    }
+
+    public function getFileInformation($id) {
+        return $this->makeCurlRequest("/files/$id");
     }
 
     public function uploadFile($filePath, $fileName, $folderId = '0') {
