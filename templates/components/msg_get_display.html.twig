@@ -15,5 +15,5 @@
 
 {# Quick message handler block. #}
 {% if get.msg is defined and get.msg in messages|keys %}
-    {{ messages[get.msg] }}
+    <div class="alert alert-warning">{{ messages[get.msg] }}</div>
 {% endif %}

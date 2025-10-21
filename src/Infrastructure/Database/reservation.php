@@ -139,7 +139,12 @@ class reservation {
 	}
 
 
-
+	/**
+	 * Creates a new reservation, relevant guest entries, and sends a confirmation email with PDF attachment.
+	 * gg|option1|option2 are mutually dependent:
+	 * - if gg is 'guest', option1 will be array of guest names. option2 is ignored.
+	 * - if gg is 'group', option1 will be the group name (string). option2 will be the number of spaces (int or numeric string).
+	 */
 	function newRes (
 		string $frs,
 		string $KFS_SUB_ACCOUNT_FK,
@@ -583,7 +588,8 @@ class reservation {
 						}
 					}
 					if(!$dry) {
-						if ($gg=="guest") $this->addGuest($conf,$option1,$spaces,0,0,true);
+						// guests should only be sending arg position2 == 1; group is the actual count as it only generates one entry.
+						if ($gg=="guest") $this->addGuest($conf,$option1,1,0,0,true);
 						else $this->addGuest($conf,$option1,$option2,0,0,true);
 					}
 				}

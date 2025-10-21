@@ -22,6 +22,7 @@ class CustomerResponder {
     }
 
     public function index(Response $response, array $data) {
+        $data['get'] = $_GET ?? [];
         return $this->view->render(
             $response, 
             'customer_home.html.twig', 
