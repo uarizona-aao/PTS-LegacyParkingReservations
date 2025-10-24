@@ -307,8 +307,8 @@ function checkFormRes () {
 					<td class="req" rowspan="2">{{ _self.needHelp('guestlist') }} Guests:</td>
 					<td class="field" align="center" rowspan="2">
 						<select name="guestListBox" multiple>
-							{% if guestList is not empty %}
-								{% for guest in guestList %}
+							{% if reservation.guestList is not empty %}
+								{% for guest in reservation.guestList %}
 									<option value="{{ guest }}">{{ guest }}</option>
 								{% endfor %}
 							{% else %}

@@ -2,7 +2,8 @@
 use App\Infrastructure\Database\database;
 
 # Godawful pricing fix.
-$_SESSION['G_price_pbc_10003']	= 15; // for pbc lot 10003 only (this lot does not have comego)
+$_SESSION['G_price_pbc_10003']	= 16.25; // not used customer-side, but useful for reference; 10003 is an admin-only lot.a
+$_SESSION['G_price_pbc_10002']	= 9; // might be 11.25; watch for a ticket on this one.
 $_SESSION['G_price_regular']		= 9; // was 7
 $_SESSION['G_price_comeandgo']	= 9; // was 8
 $_SESSION['G_price_second']		= 9; // 2'nd st garage

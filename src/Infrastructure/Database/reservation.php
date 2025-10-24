@@ -340,8 +340,10 @@ class reservation {
 						$COME_AND_GO_SQL = ",0,";
 					}
 				}
-				// PBC Lot 10003 does not have comego
-				$new_price = ($garageid==12) ? $_SESSION['G_price_pbc_10003'] : $new_price;
+
+				// Notably, lot 12 here isn't available, but that conditional is kept for future-proofing reasons.
+				// 12 = 10003, 9 = 10002 
+				$new_price = ($garageid==12 || $garageid == 9) ? $_SESSION['G_price_pbc_10002'] : $new_price;
 
 				$query .= $new_price;
 				$query .= $COME_AND_GO_SQL;
@@ -356,6 +358,8 @@ class reservation {
 				$qVars['frs']			= $frs;
 				$qVars['KFS_SUB_ACCOUNT_FK'] = $KFS_SUB_ACCOUNT_FK;
 				$qVars['KFS_SUB_OBJECT_CODE_FK'] = $KFS_SUB_OBJECT_CODE_FK;
+
+				error_log(json_encode($qVars));
 
 				if(!$dry) {
 					$conf = $dbConn->sSeqInsert($query, "PARKING.GR_RESERVATION_ID", $qVars);

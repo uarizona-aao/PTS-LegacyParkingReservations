@@ -124,7 +124,7 @@ class EditCustomerViewAction extends CustomerAction
         // Setup for edit form display information
         $res->getGuests($id);
         $resInfo = $res->resinfo;
-        $resInfo['guestList'] = is_array($res->guestList) ? implode(" | ", $res->guestList) : $res->guestList;
+        $resInfo['guestList'] = $res->guestList ?? [];
         $resInfo['groupCount'] = $res->groupCount[0];
         $glg = (isset($res->groupCount[0]) && $res->groupCount[0] > 1) ? "group" : "guest";
         if($glg == "group") {
@@ -146,6 +146,7 @@ class EditCustomerViewAction extends CustomerAction
         $data['cancelUri'] = '/';
         $data['garageOptions'] = garageOptions(getVal($resInfo, 'GARAGE_ID_FK', 0), "9006,USA,10003");
         $data['kfs_valid'] = true;
+        //print "<pre>";var_dump($data);exit;
         return $this->customerResponder->edit($this->response, $data);
     }
 
