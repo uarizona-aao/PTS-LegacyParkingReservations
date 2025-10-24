@@ -273,8 +273,9 @@ class EditCustomerViewAction extends CustomerAction
         $guests['GROUP_SIZE'] = 1;
         $sizeChange = count($glist) - count($res->guestList);
         
-        if ($res->addguests != $post['laddGuests']) {
-            $edits['GUESTS_OFFCAMPUS'] = $post['laddGuests'];
-        }
+        // Not used anymore.
+        // if ($res->addguests != $post['laddGuests']) {
+        //    $edits['GUESTS_OFFCAMPUS'] = $post['laddGuests'];
+        // }
     }
 }

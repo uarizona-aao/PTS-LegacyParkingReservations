@@ -136,7 +136,7 @@ function checkFormRes () {
 <a href="{{base_url}}"><< Home</a>
 <br>
 <div class="resBox">
-<form name="resForm" method="POST" action="?id={{ res_id }}" onSubmit="return checkFormRes();">
+<form name="resForm" method="POST" action="{% if mode == 'edit' %}?id={{ db_reservation.resid }}{% endif %}" onSubmit="return checkFormRes();">
     <p class="title">General Info:</p>
 	<table border="0" cellpadding="0" cellspacing="0" width="670">
         <tr valign="middle">

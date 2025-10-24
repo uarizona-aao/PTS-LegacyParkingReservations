@@ -745,7 +745,7 @@ class reservation {
 	{
 		global $dbConn,$customer;
 		$customer = $_SESSION['cuinfo'];
-		// print "<pre>";var_dump($resid,$edits,$guests,$sizeChange);print "</pre>"; exit;
+		//print "<pre>";var_dump($resid,$edits,$guests,$sizeChange);print "</pre>"; exit;
 		if (!isset($dbConn)) $dbConn = new database();
 
 		$qVars = array();
@@ -919,6 +919,7 @@ class reservation {
 
 
 	function addGuest ($resid,$guest,$size,$addon,$sizeChange=0,$new=false) {
+		//print "<pre>";var_dump($resid,$guest,$size,$addon,$sizeChange,$new);print "</pre>";exit;
 		if (!isset($dbConn)) $dbConn = new database();
 		if (!is_array($guest)) $guest = array($guest);
 		else $guest = array_values($guest);
@@ -947,7 +948,7 @@ class reservation {
 				}
 			}
 			if (!$new)
-				$this->resNote($resid, $this->customer["userid"], "Added Guest(s): ".implode(" | ",$guest), $sizeChange, 1);
+				$this->resNote($resid, $this->userid, "Added Guest(s): ".implode(" | ",$guest), $sizeChange, 1);
 		}
 	}
 
