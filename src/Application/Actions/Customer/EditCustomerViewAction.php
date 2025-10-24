@@ -134,7 +134,7 @@ class EditCustomerViewAction extends CustomerAction
         
         // To patch resInfo, have all keys => [single_value] be just key => value if it is an array
         foreach ($resInfo as $key => $value) {
-            if (is_array($value) && count($value) == 1) {
+            if (is_array($value) && count($value) == 1 && $key !== 'guestList') {
                 $resInfo[$key] = $value[0];
             }
         }
@@ -145,9 +145,8 @@ class EditCustomerViewAction extends CustomerAction
         $data['db_reservation'] = $res;
         $data['cancelUri'] = '/';
         $data['garageOptions'] = garageOptions(getVal($resInfo, 'GARAGE_ID_FK', 0), "9006,USA,10003");
-        $data['kfs_valid'] = true;
-        //print "<pre>";var_dump($data);exit;
-        return $this->customerResponder->edit($this->response, $data);
+        $data['kfs_valid'] = true;	
+    	return $this->customerResponder->edit($this->response, $data);
     }
 
     private function handleEditSubmission(reservation $res): Response 
@@ -157,7 +156,8 @@ class EditCustomerViewAction extends CustomerAction
         if (!$id) {
             return $this->response->withStatus(404);
         }
-
+        // Handle redirection after edits.
+        $appUrl = $_ENV['APP_URL'] ?: '/';
         $post = $this->request->getParsedBody();
         $edits = [];
         $guests = [];
@@ -230,15 +230,16 @@ class EditCustomerViewAction extends CustomerAction
             (isset($guests['edit']) && $guests['edit']) || 
             (isset($guests['sizeedit']) && $guests['sizeedit'])) {
             $test = $res->editRes([$id], $edits, $guests, $sizeChange);
+
             if (!$test && $res->error) {
-                return $this->response->withHeader('Location', "/edit?id={$res->conf}&error={$res->error}")
+                return $this->response->withHeader('Location', "{$appUrl}edit?id={$res->conf}&error={$res->error}")
                                     ->withStatus(302);
             }
-            return $this->response->withHeader('Location', '/?msg=edited')
+            return $this->response->withHeader('Location', "{$appUrl}?msg=edited")
                                 ->withStatus(302);
         }
 
-        return $this->response->withHeader('Location', '/?msg=nochanges')
+        return $this->response->withHeader('Location', "{$appUrl}?msg=nochanges")
                             ->withStatus(302);
     }
 

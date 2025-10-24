@@ -624,7 +624,9 @@ class reservation {
 				$package->RESERVATIONVISITORCOUNT=$this->groupCount;
 				$package->RESERVATIONNUMBER = implode(", ", $this->resid);
 				$package->RESERVATIONDATES=implode(", ",$dates);
+				error_log("Sending flowbird data");
 				$notifcationRecipiants = $rc->processFlowbirdReservation($package, $dry);
+				error_log("Sent flowbird data");
 
 				$recipient = "staceyg@arizona.edu";
 				$recipient = $notifcationRecipiants;
