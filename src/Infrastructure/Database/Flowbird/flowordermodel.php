@@ -282,7 +282,8 @@ class FloworderModel extends DatabaseModel
     {
 
         $sql3 = "select
-                    GRD.DEPT_NAME 
+                    GRD.DEPT_NAME
+                    , GFRS.DESCRIPTION
                     FROM GR_DEPARTMENT GRD
                     INNER JOIN GR_FRS GFRS
                     ON GRD.DEPT_NO=GFRS.DEPT_NO_FK
@@ -297,7 +298,7 @@ class FloworderModel extends DatabaseModel
 
           $data = new \stdClass();
             $altInfo->found = true;
-           $sql2 = "Insert into KFSNUMBERS (KFSNUMBER,DEPARTMENTNAME) values ('$kfsNumber','" . $altkfsInfoData->DEPT_NAME . "')";
+           $sql2 = "Insert into KFSNUMBERS (KFSNUMBER,DEPARTMENTNAME,ACCOUNTNAME) values ('$kfsNumber','" . $altkfsInfoData->DEPT_NAME . "','" . $altkfsInfoData->DESCRIPTION . "')";
            $this->insertUpdate($sql2, $data);
             $altInfo->DEPARTMENTNAME = $altkfsInfoData->DEPT_NAME;
         }
