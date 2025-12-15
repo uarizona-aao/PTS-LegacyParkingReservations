@@ -56,6 +56,7 @@
 <p align="center">
     <input type="hidden" name="confirm" value="">
     <input type="hidden" name="change" value="">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
 
     <input type="button" class="submitter" value="Accept and Confirm"
            onclick="this.form.setAttribute('target', '_blank'); this.form.confirm.value=1; this.form.submit(); document.location.href='/?resConf=1';" />

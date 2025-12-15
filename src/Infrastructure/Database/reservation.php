@@ -162,6 +162,7 @@ class reservation {
 		string $addGuests = '',
 		bool|string $dry = false
 	) {
+		error_log("NEW_RES CALLED - DRY: " . ($dry ? 'true' : 'false') . " | Time: " . microtime(true));
 		global $dbConn, $pdfConfirmFile;
 		if (!isset($dbConn)) $dbConn = new database();
 
@@ -254,6 +255,7 @@ class reservation {
 
 		// loop through the dates
 		for ($i=0; $i<count($dates); $i++) {
+			error_log("Iteration $i - Date: " . $dates[$i]);
 			$dateCheck = explode('/',$dates[$i]);
 
 			// don't think $dc is even used anywhere!
@@ -373,6 +375,7 @@ class reservation {
 				} else {
 					$conf = 888; // A fake id for dry run
 					// Populate required properties for dry run
+					$this->conf = $conf;
 					$this->resdate = $dates[0];
 					$this->resenter = $stime;
 					$this->resexit = $etime;

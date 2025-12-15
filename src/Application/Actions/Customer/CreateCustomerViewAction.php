@@ -37,7 +37,6 @@ class CreateCustomerViewAction extends CustomerAction
         $redDates = isset($resInfo['RESDATE']) ? $resInfo['RESDATE'] : '';
         $defaultDateStr = $redDates ? explode(',', $redDates)[0] : '';
         $addDatesStr = $redDates ? implode(',', array_map(fn($date) => "'$date'", explode(',', $redDates))) : '';
-
         $data = [
             'receipt' => '', // Content for receipt
             'error' => '',
@@ -71,6 +70,24 @@ class CreateCustomerViewAction extends CustomerAction
         // actually confirmed order and ready to submit.
         elseif (isset($_POST['confirm']) && trim($_POST['garage'] ?? ''))
         {
+            // Validate CSRF token
+            $submittedToken = $_POST['csrf_token'] ?? '';
+            $sessionToken = $_SESSION['csrf_token'] ?? '';
+            
+            if (empty($submittedToken) || empty($sessionToken) || !hash_equals($sessionToken, $submittedToken)) {
+                // Invalid or missing CSRF token
+                unset($_SESSION['csrf_token']); // Clear the token
+                return $this->customerResponder->create($this->response, [
+                    'error' => 'Invalid or expired reservation security token. Please try submitting your reservation again.',
+                    'reservation' => [],
+                    'glg' => '',
+                    'cancelUri' => 'index.php'
+                ]);
+            }
+            
+            // Clear the CSRF token after validation to prevent reuse
+            unset($_SESSION['csrf_token']);
+            
             // option handling
             if ($_POST['groupGuest']=="group") {
                 $option1 = array($_POST['groupName']);
@@ -183,10 +200,15 @@ class CreateCustomerViewAction extends CustomerAction
                 $val = str_replace('"', "''", stripslashes($val));
             });
 
+            // Generate CSRF token for the agreement form
+            $csrfToken = bin2hex(random_bytes(32));
+            $_SESSION['csrf_token'] = $csrfToken;
+
             // Rest of the flow goes normally.
             return $this->customerResponder->agreement($this->response, [
                 'reservation' => $reservationData,
-                'post_data' => $postData
+                'post_data' => $postData,
+                'csrf_token' => $csrfToken
             ]);
         } else {
             // Generate the basic submit form when you start
