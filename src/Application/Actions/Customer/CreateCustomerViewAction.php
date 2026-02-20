@@ -331,7 +331,7 @@ class CreateCustomerViewAction extends CustomerAction
             $pbc_lot_loc = ($pbc_lot_num == '10003') 
                 ? "Lot 10003, Located at 550 E Van Buren, 85004" 
                 : "Lot 10002, Located at 714 E Van Buren, 85004";
-            return "Phoenix BioMedical Campus <a href='https://parking.arizona.edu/pdf/maps/phoenixmedicalcenterlot.pdf' target='_blank'>{$pbc_lot_loc}</a>";
+            return "Phoenix BioMedical Campus <a href='https://pciapps1.ba.arizona.edu/garage_reservation/images/maps/phoenixmedicalcenterlot.pdf' target='_blank'>{$pbc_lot_loc}</a>";
         }
         return $garageName;
     }

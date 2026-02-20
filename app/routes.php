@@ -94,6 +94,63 @@ return function (App $app) {
     // TODO help route if we can find gr_help.php?
     $app->get('/frscheck', CheckFRSAction::class);
 
+    // Dash pass PDF route
+    $app->get('/dash_pass/{resid}', function (Request $request, Response $response, $args) {
+        $resid = $args['resid'];
+        
+        // Validate reservation ID
+        if (!is_numeric($resid)) {
+            return $response->withStatus(404);
+        }
+
+        // Get reservation details
+        $res = new reservation();
+        $res->getRes($resid);
+
+        if (!$res->resinfo) {
+            return $response->withStatus(404);
+        }
+
+        // Check if user has permission to view this reservation
+        $customer = $_SESSION['cuinfo'];
+        if ($customer['auth'] < 3) {
+            $tmpAry = [
+                'deptno' => $res->resinfo['DEPT_NO_FK'][0], 
+                'userid' => $res->userid
+            ];
+            $res->checkResOwner($customer, $tmpAry);
+            if (!$res->owner) {
+                return $response->withStatus(403);
+            }
+        }
+
+        // Check if this is a BioMedical reservation (garage ID 9 = 10002)
+        if ($res->garageid != 9) {
+            return $response->withStatus(400)->write('Dash pass only available for BioMedical campus reservations.');
+        }
+
+        // Generate the PDF
+        $pdfFile = $res->generateDashPassPDF();
+        if (!$pdfFile) {
+            return $response->withStatus(500)->write('Error generating PDF.');
+        }
+
+        // Return the PDF file
+        $publicPath = realpath(__DIR__ . '/../public/resPDF');
+        $filePath = "$publicPath/$pdfFile";
+        
+        if (!file_exists($filePath)) {
+            return $response->withStatus(404)->write('PDF file not found.');
+        }
+
+        // Set headers for PDF download
+        $response = $response->withHeader('Content-Type', 'application/pdf')
+                            ->withHeader('Content-Disposition', 'inline; filename="' . $pdfFile . '"');
+        
+        $response->getBody()->write(file_get_contents($filePath));
+        return $response;
+    });
+
     // Box-related route:
     $app->get('/dash_pass_pdf/{pdf_id}', function($request, $response) {
         // X-Route-Key check to control who calls this.

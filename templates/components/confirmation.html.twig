@@ -40,7 +40,7 @@
                                 {% if reservation.garageName != 'South Stadium Garage' and reservation.garageName != 'Highland Avenue Garage' %}
                                     <button type="button" class="list-group-item" 
                                             onClick="window.location.href='{{base_url}}/edit?id={{ reservation.conf }}';">
-                                        <img src="images/edit.gif" width="16" height="16" alt="" align="absmiddle"/>
+                                        <img src="images/icons/b_edit.png" width="16" height="16" alt="" align="absmiddle"/>
                                         &nbsp;Edit This Reservation{{ dateStr }}
                                     </button>
 
@@ -51,20 +51,13 @@
                                         </a>
                                     {% endif %}
 
-                                    {% if can_cancel %}
+                                    {# Add Dash Pass button for BioMedical reservations (garage ID 9 = 10002) #}
+                                    {% if can_dash_pass %}
                                         <button type="button" class="list-group-item" 
-                                                onclick="if(confirm('Click OK to cancel this reservation')){document.form_a.cancelres.value=1; window.location.href='{{base_url}}/cancel?id={{ reservation.conf }}';}">
-                                            <img src="images/delete.png" width="16" height="16" alt="" align="absmiddle"/>
-                                            &nbsp;Cancel This Reservation
+                                                onClick="window.open('{{base_url}}/dash_pass/{{ reservation.conf }}', '_blank');">
+                                            <img src="images/icons/pdf.gif" width="16" height="16" alt="" align="absmiddle" onerror="this.style.display='none'"/>
+                                            &nbsp;View Dash Pass PDF
                                         </button>
-                                        <input type="hidden" name="cancelres" value="" />
-                                    {% endif %}
-
-                                    {% if can_revive %}
-                                        <button type="button" class="list-group-item" onClick="this.form.submit();" name="revive">
-                                            Re-activate This Reservation
-                                        </button>
-                                        <input type="hidden" name="revive" value="revive" />
                                     {% endif %}
                                 {% endif %}
                             </div>

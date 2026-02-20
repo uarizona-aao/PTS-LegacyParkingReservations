@@ -67,6 +67,7 @@ class CustomerResponder {
             'can_edit' => $data['can_edit'] ?? false,
             'can_cancel' => $data['can_cancel'] ?? false,
             'can_revive' => $data['can_revive'] ?? false,
+            'can_dash_pass' => $data['can_dash_pass'] ?? false,
             'dateStr' => $data['dateStr'] ?? '',
             'gg' => $data['gg'] ?? 'guest',
             'garage_text' => $data['garage_text'] ?? '',

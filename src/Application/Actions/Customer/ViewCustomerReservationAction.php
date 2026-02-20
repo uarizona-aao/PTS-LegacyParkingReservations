@@ -45,6 +45,7 @@ class ViewCustomerReservationAction extends CustomerAction
             $res->checkResOwner($customer, $tmpAry);
         }
         $res->conf = $id;
+
         return $this->customerResponder->confirmation($this->response, [
             'reservation' => $res,
             'receipt' => isset($_GET['action']) && $_GET['action'] == 'receipt',
@@ -53,6 +54,7 @@ class ViewCustomerReservationAction extends CustomerAction
             'can_edit' => $this->canEdit($res),
             'can_cancel' => $this->canCancel($res),
             'can_revive' => $this->canRevive($res),
+            'can_dash_pass' => $this->canShowDashPass($res),
             'gg' => (isset($res->groupCount[0]) && $res->groupCount[0] > 1) ? "group" : "guest",
             'garage_text' => $this->formatGarageText($res->garageName),
             'history' => $this->getReservationHistory($id),
@@ -80,6 +82,13 @@ class ViewCustomerReservationAction extends CustomerAction
                strtotime($res->resdate) >= strtotime('today');
     }
 
+    private function canShowDashPass($res): bool 
+    {
+        $auth = $_SESSION['cuinfo']['auth'] ?? 0;
+        // Show dash pass button if user owns the reservation or is admin, and it's for BioMedical (garage ID 9)
+        return ($auth >= 4 || $res->owner) && $res->garageid == 9;
+    }
+
     private function formatGarageText($garageName): string 
     {
         $base_url = $_ENV['APP_URL'] ?? '';
@@ -88,7 +97,7 @@ class ViewCustomerReservationAction extends CustomerAction
             $pbc_lot_loc = ($pbc_lot_num == '10003') 
                 ? "Lot 10003, Located at 550 E Van Buren, 85004" 
                 : "Lot 10002, Located at 714 E Van Buren, 85004";
-            return "Phoenix BioMedical Campus <a href='{$base_url}/pdf/maps/phoenixmedicalcenterlot.pdf' target='_blank'>{$pbc_lot_loc}</a>";
+            return "Phoenix BioMedical Campus <a href='{$base_url}/images/maps/phoenixmedicalcenterlot.pdf' target='_blank'>{$pbc_lot_loc}</a>";
         }
         return $garageName;
     }

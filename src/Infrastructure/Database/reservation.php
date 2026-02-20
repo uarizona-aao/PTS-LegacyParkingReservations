@@ -467,7 +467,7 @@ class reservation {
 						$pbc_lot_loc = ($pbc_lot_num=='10003') ? "Lot 10003,\nLocated at 550 E Van Buren, 85004" : "Lot 10002,\nLocated at 714 E Van Buren, 85004";
 						// Use 'Phoenix BioMedical Campus' because don't want "Phoenix BioMedical 10003"
 						$garageTxt = 'Phoenix BioMedical Campus ' . $pbc_lot_loc;
-						$garageLinkTxt1 = "To view a map of Phoenix BioMedical parking lots, please visit our web site:\nhttps://pciapps1.ba.arizona.edu/garage_reservation/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
+						$garageLinkTxt1 = "To view a map of Phoenix BioMedical parking lots, please visit our web site:\nhttps://pciapps1.ba.arizona.edu/garage_reservation/images/maps/phoenixmedicalcenterlot.pdf\n\n";
 						$garageLinkTxt2 =         "pciapps1.ba.arizona.edu/garage_reservation/images/maps/phoenixmedicalcenterlot.pdf";
 					}
 
@@ -916,7 +916,8 @@ class reservation {
 		$this->groupCount = array();
 		if ($dbConn->rows) {
 			$this->guestList = $dbConn->results["GUEST_NAME"];
-			$this->groupCount = $dbConn->results["GROUP_SIZE"];
+			// The below was previously not using array_sum(); the rows should be summed for grouptype reservations.
+			$this->groupCount = array_sum($dbConn->results["GROUP_SIZE"]);
 		}
 		else $this->error = "noGuests";
 	}
@@ -1378,10 +1379,107 @@ class reservation {
 	
 		if (preg_match('/(BioMedical)/i', $garageTxt)) {
 			$instructions .= "To view a map of Phoenix BioMedical parking lots, please visit our web site:\n";
-			$instructions .= "https://pciapps1.ba.arizona.edu/garage_reservation/pdf/maps/phoenixmedicalcenterlot.pdf\n\n";
+			$instructions .= "https://pciapps1.ba.arizona.edu/garage_reservation/images/maps/phoenixmedicalcenterlot.pdf\n\n";
 		}
 	
 		return $instructions;
+	}
+
+	/**
+	 * Generate dash pass PDF for an existing reservation (for BioMedical campus)
+	 * This method extracts and reuses the PDF generation logic from newRes
+	 */
+	function generateDashPassPDF() {
+		global $dbConn;
+		if (!isset($dbConn)) $dbConn = new database();
+
+		// Check if this is a BioMedical reservation (garage ID 9 = 10002)
+		if ($this->garageid != 9) {
+			return false;
+		}
+
+		// Get department name
+		$deptNameTmp = $this->deptName;
+		if (empty($deptNameTmp) && $this->deptno && ctype_alnum($this->deptno)) {
+			$query = "SELECT DEPT_NAME FROM PARKING.GR_DEPARTMENT WHERE DEPT_NO=:dept";
+			$dbConn->sQuery($query, ['dept' => $this->deptno]);
+			if ($dbConn->rows) {
+				$deptNameTmp = $dbConn->results['DEPT_NAME'][0];
+			}
+		}
+
+		// Generate PDF filename
+		$pdfConfirmFile = $this->resid . '_' . ($this->resid * 13 + 846756) . '.pdf';
+
+		// Path to save the PDF
+		$publicPath = realpath(__DIR__ . '/../../../public/resPDF');
+		if (!file_exists($publicPath)) {
+			mkdir($publicPath, 0777, true);
+		}
+
+		// Path to images
+		$imagesPath = realpath(__DIR__ . '/../../../public/images');
+
+		// Garage text for BioMedical
+		$pbc_lot_loc = "Lot 10002,\nLocated at 714 E Van Buren, 85004";
+		$garageTxt = 'Phoenix BioMedical Campus ' . $pbc_lot_loc;
+		$garageLinkTxt2 = "pciapps1.ba.arizona.edu/garage_reservation/images/maps/phoenixmedicalcenterlot.pdf";
+
+		// Generate confirmation and date/time strings
+		$confNums = "Confirmation Number(s): " . $this->resid;
+		$resDateTime = $this->resdate . " from " . $this->resenter . " to " . $this->resexit;
+
+		// Handle other dates if they exist
+		$recurAppend = '';
+		if (isset($this->otherDates) && count($this->otherDates) > 1) {
+			$otherDatesList = array_values($this->otherDates);
+			array_shift($otherDatesList); // Remove first date since it's already used
+			$resDateRecur = "Recurring on " . implode(', ', $otherDatesList);
+		}
+
+		// Initialize TCPDF
+		$pdf = new TCPDF();
+		$pdf->SetCreator(PDF_CREATOR);
+		$pdf->SetAuthor('PTS Visitor Programs');
+		$pdf->SetTitle('Garage Reservation Confirmation');
+		$pdf->SetSubject('Reservation Confirmation');
+		$pdf->SetMargins(15, 15, 15);
+		$pdf->SetAutoPageBreak(true, 15);
+		$pdf->AddPage();
+
+		// Add content to the PDF
+		$pdf->SetFont('helvetica', '', 12);
+		$pdf->Cell(0, 10, $garageTxt, 0, 1, 'C');
+		$pdf->Ln(5);
+		$pdf->Cell(0, 10, $garageLinkTxt2, 0, 1, 'C');
+		$pdf->Ln(10);
+		$pdf->MultiCell(0, 10, "Department: $deptNameTmp", 0, 'L');
+		$pdf->Ln(5);
+		$pdf->MultiCell(0, 10, $confNums, 0, 'L');
+		$pdf->Ln(5);
+		$pdf->MultiCell(0, 10, $resDateTime, 0, 'L');
+		if (isset($resDateRecur)) {
+			$pdf->Ln(5);
+			$pdf->MultiCell(0, 10, $resDateRecur, 0, 'L');
+		}
+		$pdf->Ln(5);
+		$pdf->MultiCell(0, 10, "Spaces: " . $this->groupCount . $recurAppend, 0, 'L');
+		$pdf->Ln(10);
+		$pdf->MultiCell(0, 10, "Place on driver side dashboard of vehicle, without obstruction", 0, 'C');
+		$pdf->Ln(10);
+
+		// Add images if they exist
+		if (file_exists("$imagesPath/pts_logo.png")) {
+			$pdf->Image("$imagesPath/pts_logo.png", 15, 250, 50);
+		}
+		if (file_exists("$imagesPath/ptsAddress.png")) {
+			$pdf->Image("$imagesPath/ptsAddress.png", 15, 270, 50);
+		}
+
+		// Save the PDF to the public directory
+		$pdf->Output("$publicPath/$pdfConfirmFile", 'F');
+
+		return $pdfConfirmFile;
 	}
 }
 ?>
