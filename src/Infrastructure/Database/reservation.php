@@ -370,7 +370,7 @@ class reservation {
 					$this->resexit = $etime;
 					$this->userName = $_SESSION['eds_data']['givenname'] . ' ' . $_SESSION['eds_data']['sn'];
 					$this->resdate = implode(', ', $dates); // Use user-submitted date(s) as a comma-separated string
-					$this->guestList = is_array($option1) ? implode(", ",$option1) : $option1;
+					$this->guestList = is_array($option1) ? $option1 : explode(' | ', $option1); // force this to an array no matter.
 					$this->groupCount = $spaces;
 				} else {
 					$conf = 888; // A fake id for dry run
@@ -430,7 +430,7 @@ class reservation {
 					$this->errordate = $dates[$i];
 					return false;
 				}
-				if (!$this->conf && !$this->error) {
+				if ($this->conf && !$this->error) {
 					// get res ids (they will always be sequential if multiple dates)
 					$this->resid = array($this->conf);
 					$resCount = count($dates)-1;
