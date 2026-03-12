@@ -606,47 +606,9 @@ class reservation {
 			}
 		}
 		if (isset($_SESSION['cuinfo']['email'])) {	
-			if ($garageTxt=="South Stadium Garage" || $garageTxt=="Highland Avenue Garage" ) {
-				
-				$gLocation=($garageTxt=="South Stadium Garage")? "STA" : "HND" ;
-				$numberOfTickets=count($dates)*$this->groupCount;
-				$rc=new ReservationController();
-				$kfsInformation=$rc->getKFSInformation($frs);
-				$package=new \stdClass();
-				$package->FBTICKETVALUE=9;
-				$package->FBTICKETTYPE='SINGLE';
-				$package->FBTICKETLOCATION=$gLocation;
-				$package->FBNUMBEROFTICKETS=$numberOfTickets;
-				$package->TOTALORDERCOST=$numberOfTickets*9;
-				$package->CUSTOMERNAME= $_SESSION['eds_data']['sn'] . ', ' . $_SESSION['eds_data']['givenname'];
-				$package->CUSTOMEREMAIL=$_SESSION['eds_data']['mail'];
-				$package->CUSTOMERPHONE = isset($_SESSION['eds_data']['employeephone']) ? $_SESSION['eds_data']['employeephone'] : '(999) 999-9999';
-				$package->KFSNUMBER=$frs;
-				$package->DEPARTMENTNAME=$kfsInformation->DEPARTMENTNAME;
-				$package->RESERVATIONDATE=$dates[0];
-				$package->RESERVATIONVISITORCOUNT=$this->groupCount;
-				$package->RESERVATIONNUMBER = implode(", ", $this->resid);
-				$package->RESERVATIONDATES=implode(", ",$dates);
-				error_log("Sending flowbird data");
-				$notifcationRecipiants = $rc->processFlowbirdReservation($package, $dry);
-				error_log("Sent flowbird data");
-
-				$recipient = "staceyg@arizona.edu";
-				$recipient = $notifcationRecipiants;
-				$subject = $garageTxt . ' New Garage Reservation';
-				$text = $msg3;
-				$from = "PTS-ParkingReservations@arizona.edu";
-				$bcc = "PTS-IT-Emails@email.arizona.edu";
-
-				if(!$dry) {
-					$wasEmailed = $this->send_email($recipient, $subject, $text, $from, $bcc);
-				} else {
-					$wasEmailed = true;
-				}
-			} else {
 				if(!$dry) {
 					$isValidationRequired = ($garageTxt == "South Stadium Garage" || 
-                           $garageTxt == "Highland Avenue Garage");
+                           $garageTxt == "Highland Avenue Garage"); // old flowbird-esque garage elements; we still keep this for posterity.
 					$messages = $this->generateEmailMessage($this->garageName, $dates, $stime, $etime, $pdfConfirmFile, $isValidationRequired);
 					$msg1 = $messages['msg1'];
 					$msg2 = $messages['msg2'];
@@ -657,7 +619,6 @@ class reservation {
 				}
 				// mail($_SESSION['cuinfo']['email'], 'Garage Reservation Confirmation', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
 				//mail('jbrabec@email.arizona.edu', 'Garage Reservation conf 2', $msg1.$msg2.$msg3, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\n");			
-			}	
 		} else {
 			$wasEmailed = false;
 		}
