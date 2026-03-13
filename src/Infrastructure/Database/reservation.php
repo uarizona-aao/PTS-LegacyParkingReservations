@@ -628,8 +628,13 @@ class reservation {
 			$msg_err .= '~~~~~~~~~~~~~~ QUERY: ' . $wasInserted."\n\n";
 			$msg_err .= '~~~~~~~~~~~~~~ EMAIL MSG: ' . $msg1.$msg2.$msg3;
 			//	mail('jbrabec@email.arizona.edu', 'Garage Reservation Inserted but NOT emailed', $msg_err, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\nBcc:<PTS-IT-Emails@email.arizona.edu>\r\n");
-			$this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Inserted but NOT emailed.', $msg_err, "");
-			// mail('PTS-IT-Emails@email.arizona.edu', 'Garage Reservation Inserted but NOT emailed', $msg_err, "From:\"PTS Visitor Programs\" <PTS-ParkingReservations@email.arizona.edu>\r\n");
+			// $this->send_email($_SESSION['cuinfo']['email'], 'Garage Reservation Inserted but NOT emailed.', $msg_err, "");
+			$this->send_email(
+				'PTS-IT-Emails@email.arizona.edu',
+				'Garage Reservation Inserted but NOT emailed',
+				$msg_err,
+				'PTS-ParkingReservations@email.arizona.edu'
+			);
 		}
 	}
 
